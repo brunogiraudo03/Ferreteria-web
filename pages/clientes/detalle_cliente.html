@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Detalle de Cliente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css">
+    <style>
+        .saldo-box { background-color: #e9ecef; }
+        .movimiento-debe { color: #dc3545; }
+        .movimiento-paga { color: #198754; }
+        
+        /* --- ESTILOS DE IMPRESIÓN SIMPLIFICADOS (para la misma página) --- */
+        #print-area { display: none; } /* Oculto en pantalla */
+
+        @media print {
+            /* Ocultar todo lo que no sea el área de impresión */
+            body > *:not(#print-area) {
+                display: none !important;
+            }
+
+            /* Mostrar y configurar el área de impresión */
+            #print-area {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                font-size: 12px;
+            }
+
+            .table-print {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .table-print th, .table-print td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align: left;
+            }
+            .table-print th {
+                background-color: #f0f0f0;
+                text-align: center;
+            }
+            .text-end { text-align: right; }
+            
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                border-bottom: 2px solid black;
+                padding-bottom: 10px;
+            }
+            .print-header h2 { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm no-print">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../caja/caja_table.html">CAJA</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../resumen.html">RESUMEN</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="clientes.html">CLIENTES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../proveedores/proveedores.html">PROVEEDORES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4 no-print">
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4 saldo-box rounded">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                     <div>
+                         <a href="clientes.html" class="btn btn-outline-secondary btn-sm me-2"> <i class="bi bi-arrow-left"></i> Volver </a>
+                         <button class="btn btn-primary btn-sm" id="btn-imprimir-cuenta"> <i class="bi bi-printer-fill me-1"></i> Imprimir Resumen </button>
+                     </div>
+                    <button class="btn btn-danger btn-sm" id="btn-limpiar-cuenta"> <i class="bi bi-trash3-fill me-1"></i> Limpiar Cuenta </button>
+                </div>
+               
+                <h1 id="nombre-cliente" class="mb-0 text-danger display-6">Cargando...</h1>
+                <h4 id="telefono-cliente" class="text-muted fw-normal"></h4>
+                <h2 class="text-muted mt-2">Saldo deudor total: <strong id="saldo-total" class="text-dark">$0.00</strong></h2>
+                <div id="advertencia-precio" class="alert alert-warning mt-2 mb-0" style="display: none;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Atención:</strong> ¡Hay productos cargados sin precio! El saldo total es provisorio.
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-cart-plus-fill me-2"></i><span id="titulo-form-deuda">Agregar Deuda</span></h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="debe-form">
+                            <input type="hidden" id="movimiento-editando-id">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-3">
+                                    <label for="debe-cantidad" class="form-label">Cant.</label>
+                                    <input type="number" class="form-control" id="debe-cantidad" value="1" step="any">
+                                </div>
+                                <div class="col-md-9">
+                                    <label for="debe-producto" class="form-label">Producto/Detalle</label>
+                                    <input type="text" class="form-control" id="debe-producto" required>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label for="debe-precio" class="form-label">Precio Unit.</label>
+                                    <div class="input-group"><span class="input-group-text">$</span><input type="number" class="form-control" id="debe-precio" step="any" placeholder="Opcional"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="debe-total" class="form-label">Total</label>
+                                    <div class="input-group"><span class="input-group-text">$</span><input type="number" class="form-control" id="debe-total" step="any" placeholder="Opcional"></div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label for="debe-fecha" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="debe-fecha">
+                                </div>
+                                <div class="col-md-6 align-self-end">
+                                    <!-- Visualizamos la fecha original SOLO cuando estamos en modo edición -->
+                                    <small id="debe-fecha-original" class="text-muted" style="display:none;">Fecha original: <span id="debe-fecha-original-text"></span></small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100" id="btn-submit-debe">Agregar</button>
+                            <button type="button" class="btn btn-secondary w-100 mt-2" id="btn-cancelar-edicion" style="display: none;">Cancelar Edición</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Registrar Pago</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="pago-form">
+                            <div class="mb-3">
+                                <label for="pago-metodo" class="form-label">Método de Pago</label>
+                                <select class="form-select" id="pago-metodo">
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                    <option value="Cheque">Cheque</option>
+                                </select>
+                            </div>
+                             <div class="mb-3">
+                                <label for="pago-monto" class="form-label">Monto del Pago</label>
+                                <div class="input-group"><span class="input-group-text">$</span><input type="number" class="form-control" id="pago-monto" step="any" required></div>
+                            </div>
+                            <!-- Campo fecha para el pago -->
+                            <div class="mb-3">
+                                <label for="pago-fecha" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="pago-fecha">
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100">Registrar Pago</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <h3 class="text-dark">Detalle de Movimientos</h3>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Cant.</th>
+                                        <th>Detalle</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-movimientos"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="print-area">
+
+        <div class="print-header" style="text-align:center; margin-bottom:25px;">
+
+            <!-- LOGO -->
+            <img src="../../static/images/logo.jpg" 
+                alt="Logo Ferretería" 
+                style="height:90px; margin-bottom:10px;">
+
+            <!-- TITULO -->
+            <h1 style="margin:0; font-size:28px; font-weight:700;">Ferretería  </h1>
+
+            <!-- DATOS DEL NEGOCIO -->
+            <p style="margin:2px 0 0 0; font-size:14px;">Direccion</p>
+            <p style="margin:2px 0 0 0; font-size:14px;">Tel: &nbsp;&nbsp; | &nbsp;&nbsp; CUIT: </p>
+
+            <!-- ESPACIO -->
+            <div style="height:10px;"></div>
+
+            <!-- RESUMEN -->
+            <h2 style="margin:0; font-size:20px; font-weight:600;">Resumen de Cuenta Corriente</h2>
+
+            <!-- CLIENTE -->
+            <p style="margin:4px 0; font-size:16px;">
+                Cliente: <strong id="print-cliente-nombre"></strong>
+            </p>
+
+            <!-- FECHA -->
+            <p style="margin:0; font-size:14px;">
+                Fecha emisión: <span id="print-fecha-emision"></span>
+            </p>
+
+            <!-- LINEA DE SEPARACIÓN -->
+            <hr style="margin-top:15px; border:0; border-top:2px solid #000;">
+        </div>
+
+
+        
+        <div style="margin-bottom: 20px;">
+            <strong>Cliente:</strong> <span id="print-cliente-nombre" style="font-size: 1.2em;"></span><br>
+            <span id="print-cliente-telefono"></span>
+        </div>
+
+        <table class="table-print">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th>Debe (Compra)</th>
+                    <th>Haber (Pago)</th>
+                    <th>Saldo Parcial</th>
+                </tr>
+            </thead>
+            <tbody id="print-tabla-body">
+                </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-end" style="padding: 10px;"><strong>SALDO FINAL:</strong></td>
+                    <td class="text-end" style="padding: 10px;"><strong id="print-saldo-final"></strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+        // 1. CONFIGURACIÓN (LA DE PRODUCCIÓN/CAJA REAL)
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                console.log("Error persistencia:", err.code);
+            });
+
+        const db = firebase.firestore();
+
+        // --- REFERENCIAS DEL DOM ---
+        const nombreClienteEl = document.getElementById('nombre-cliente');
+        const telefonoClienteEl = document.getElementById('telefono-cliente');
+        const saldoTotalEl = document.getElementById('saldo-total');
+        const tablaMovimientos = document.getElementById('tabla-movimientos');
+        
+        // Formularios e Inputs
+        const debeForm = document.getElementById('debe-form');
+        const pagoForm = document.getElementById('pago-form');
+        const debeCantidad = document.getElementById('debe-cantidad');
+        const debeProducto = document.getElementById('debe-producto');
+        const debePrecio = document.getElementById('debe-precio');
+        const debeTotal = document.getElementById('debe-total');
+        const debeFecha = document.getElementById('debe-fecha');
+        const debeFechaOriginalWrapper = document.getElementById('debe-fecha-original');
+        const debeFechaOriginalText = document.getElementById('debe-fecha-original-text');
+        const pagoFecha = document.getElementById('pago-fecha');
+        
+        // Edición y Botones
+        const movimientoEditandoIdInput = document.getElementById('movimiento-editando-id');
+        const btnSubmitDebe = document.getElementById('btn-submit-debe');
+        const tituloFormDeuda = document.getElementById('titulo-form-deuda');
+        const btnCancelarEdicion = document.getElementById('btn-cancelar-edicion');
+        const btnLimpiarCuenta = document.getElementById('btn-limpiar-cuenta');
+        const btnImprimirCuenta = document.getElementById('btn-imprimir-cuenta');
+        
+        // Variables Globales
+        let clienteId = null;
+        let clienteNombre = '';
+        let clienteTelefono = '';
+        let movimientosCargados = []; 
+        let saldoCalculadoReal = 0; // <--- ESTA ES LA NUEVA VERDAD
+
+        // --- UTILIDADES ---
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        
+        const formatDate = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString('es-AR');
+            if (timestamp instanceof Date) return timestamp.toLocaleDateString('es-AR');
+            // Intento de parseo de string fecha
+            const d = new Date(timestamp);
+            if (!isNaN(d)) return d.toLocaleDateString('es-AR');
+            return 'N/A';
+        };
+
+        // Auto-cálculo en inputs
+        const calcularTotal = () => {
+            const cant = parseFloat(debeCantidad.value) || 0;
+            const precio = parseFloat(debePrecio.value) || 0;
+            if (precio > 0) debeTotal.value = (cant * precio).toFixed(2);
+        };
+        debeCantidad.addEventListener('input', calcularTotal);
+        debePrecio.addEventListener('input', calcularTotal);
+        debeTotal.addEventListener('input', () => {
+            if (document.activeElement === debeTotal) debePrecio.value = '';
+        });
+
+        // =============================================================================
+        //  LÓGICA PRINCIPAL (CARGA Y AUTOCORRECCIÓN)
+        // =============================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fechas por defecto hoy
+            const hoyISO = new Date().toISOString().slice(0, 10);
+            if (debeFecha) debeFecha.value = hoyISO;
+            if (pagoFecha) pagoFecha.value = hoyISO;
+
+            // Obtener Params URL
+            const urlParams = new URLSearchParams(window.location.search);
+            clienteId = urlParams.get('id');
+            clienteNombre = decodeURIComponent(urlParams.get('nombre') || '');
+            clienteTelefono = decodeURIComponent(urlParams.get('telefono') || '');
+            
+            if (!clienteId) {
+                alert('Error: No hay ID de cliente.');
+                window.location.href = 'clientes.html';
+                return;
+            }
+            
+            nombreClienteEl.textContent = clienteNombre;
+            if (clienteTelefono) telefonoClienteEl.innerHTML = `<i class="bi bi-telephone-fill me-2"></i>${clienteTelefono}`;
+
+            // 1. ESCUCHAR MOVIMIENTOS (Aquí ocurre la magia)
+            db.collection("movimientos")
+              .where("clienteId", "==", clienteId)
+              .orderBy("fecha", "desc")
+              .onSnapshot((snapshot) => {
+                movimientosCargados = [];
+                let faltanPrecios = false;
+                tablaMovimientos.innerHTML = '';
+                
+                // REINICIAMOS EL SALDO PARA CALCULARLO DE CERO
+                saldoCalculadoReal = 0; 
+
+                if (snapshot.empty) {
+                    tablaMovimientos.innerHTML = '<tr><td colspan="5" class="text-center p-3">No hay movimientos.</td></tr>';
+                }
+                
+                snapshot.forEach(doc => {
+                    const mov = { id: doc.id, ...doc.data() };
+                    movimientosCargados.push(mov);
+
+                    const monto = parseFloat(mov.monto) || 0;
+                    const esDebe = mov.tipo === 'debe';
+
+                    // --- CÁLCULO REAL ---
+                    if (esDebe) {
+                        saldoCalculadoReal += monto;
+                        if (monto === 0) faltanPrecios = true;
+                    } else {
+                        saldoCalculadoReal -= monto; // Pagos restan la deuda
+                    }
+
+                    // Renderizar Fila
+                    const tr = document.createElement('tr');
+                    let detalle = esDebe ? mov.detalle : (mov.detalle || mov.metodoPago);
+                    if (!esDebe && mov.metodoPago && !detalle.includes(mov.metodoPago)) detalle += ` (${mov.metodoPago})`;
+
+                    let montoDisplay = esDebe ? formatCurrency(monto) : `-${formatCurrency(monto)}`;
+                    let claseMonto = esDebe ? 'movimiento-debe' : 'movimiento-paga';
+
+                    let botonesAccion = '';
+                    if (esDebe) {
+                        botonesAccion = `<button class="btn btn-sm btn-warning btn-actualizar" data-id="${mov.id}"><i class="bi bi-pencil-fill"></i></button> `;
+                    }
+                    botonesAccion += `<button class="btn btn-sm btn-danger btn-borrar" data-id="${mov.id}"><i class="bi bi-trash-fill"></i></button>`;
+
+                    tr.innerHTML = `
+                        <td>${formatDate(mov.fecha)}</td>
+                        <td>${mov.cantidad || ''}</td>
+                        <td>${detalle}</td>
+                        <td class="fw-bold ${claseMonto}">${montoDisplay}</td>
+                        <td>${botonesAccion}</td>
+                    `;
+                    tablaMovimientos.appendChild(tr);
+                });
+
+                // 2. ACTUALIZAR LA PANTALLA CON EL SALDO REAL (NO EL DE LA BD)
+                actualizarDisplaySaldo(saldoCalculadoReal);
+
+                // 3. AUTOCORRECCIÓN DE LA BASE DE DATOS
+                // Comparamos el saldo calculado con el que está guardado en el cliente y lo corregimos si difiere.
+                verificarYCorregirSaldoEnBD(saldoCalculadoReal);
+
+                document.getElementById('advertencia-precio').style.display = faltanPrecios ? 'block' : 'none';
+
+            }, (error) => {
+                console.error("Error leyendo movimientos: ", error);
+                tablaMovimientos.innerHTML = '<tr><td colspan="5" class="text-center p-5 text-danger">Error al cargar.</td></tr>';
+            });
+        });
+
+        // Función para mostrar el saldo bonito
+        const actualizarDisplaySaldo = (saldo) => {
+            saldoTotalEl.textContent = formatCurrency(saldo);
+            // Usamos una pequeña tolerancia de 0.01 por temas de punto flotante
+            if (saldo > 0.01) {
+                saldoTotalEl.className = 'text-danger fw-bold display-4';
+            } else if (saldo < -0.01) {
+                saldoTotalEl.className = 'text-success fw-bold display-4';
+            } else {
+                saldoTotalEl.className = 'text-dark fw-bold display-4';
+            }
+        };
+
+        // --- FUNCIÓN CLAVE: AUTOCORRECCIÓN ---
+        const verificarYCorregirSaldoEnBD = async (saldoReal) => {
+            try {
+                const docRef = db.collection("clientes").doc(clienteId);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const saldoGuardado = doc.data().saldoTotal || 0;
+                    // Si la diferencia es mayor a $1 (por redondeos), corregimos la BD
+                    if (Math.abs(saldoGuardado - saldoReal) > 1) {
+                        console.warn(`CORRIGIENDO SALDO: BD tenía ${saldoGuardado}, Real es ${saldoReal}`);
+                        // No usamos await para no frenar la UI, que se guarde en fondo
+                        docRef.update({ 
+                            saldoTotal: saldoReal,
+                            ultimaValidacion: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("No se pudo verificar saldo en BD", e);
+            }
+        };
+
+        // =============================================================================
+        //  MANEJO DE FORMULARIOS (GUARDADO DE DATOS)
+        // =============================================================================
+
+        // Helper para crear Timestamp desde el input date
+        const obtenerFechaTimestamp = (inputElement) => {
+            if (inputElement && inputElement.value) {
+                const [year, month, day] = inputElement.value.split('-');
+                const fechaDate = new Date(year, month - 1, day);
+                return firebase.firestore.Timestamp.fromDate(fechaDate);
+            }
+            return firebase.firestore.FieldValue.serverTimestamp();
+        };
+
+        // Clics en la tabla
+        tablaMovimientos.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            const id = target.dataset.id;
+            if (target.classList.contains('btn-actualizar')) cargarFormularioEdicion(id);
+            else if (target.classList.contains('btn-borrar')) borrarMovimiento(id);
+        });
+
+        // --- AGREGAR / EDITAR DEUDA ---
+        debeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!debeProducto.value) { alert("Producto requerido"); return; }
+            
+            const montoNuevo = parseFloat(debeTotal.value) || 0;
+            const idEditando = movimientoEditandoIdInput.value;
+            const fechaParaGuardar = obtenerFechaTimestamp(debeFecha);
+            const batch = db.batch();
+            const clienteRef = db.collection("clientes").doc(clienteId);
+            const increment = firebase.firestore.FieldValue.increment;
+
+            try {
+                if (idEditando) {
+                    // EDICIÓN
+                    const movRef = db.collection("movimientos").doc(idEditando);
+                    const docSnap = await movRef.get();
+                    if (!docSnap.exists) throw new Error("Movimiento no encontrado");
+                    const montoViejo = docSnap.data().monto || 0;
+                    
+                    batch.update(movRef, {
+                        detalle: debeProducto.value,
+                        cantidad: parseFloat(debeCantidad.value) || 1,
+                        precioUnitario: parseFloat(debePrecio.value) || 0,
+                        monto: montoNuevo,
+                        fecha: fechaParaGuardar
+                    });
+                    // Ajuste delta en saldo cliente (por si acaso, aunque el autocalculo lo arreglará luego)
+                    batch.update(clienteRef, { 
+                        saldoTotal: increment(montoNuevo - montoViejo), 
+                        ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() 
+                    });
+
+                } else {
+                    // CREACIÓN
+                    const movRef = db.collection("movimientos").doc();
+                    batch.set(movRef, {
+                        clienteId: clienteId,
+                        fecha: fechaParaGuardar,
+                        tipo: 'debe',
+                        detalle: debeProducto.value,
+                        cantidad: parseFloat(debeCantidad.value) || 1,
+                        precioUnitario: parseFloat(debePrecio.value) || 0,
+                        monto: montoNuevo
+                    });
+                    batch.update(clienteRef, { 
+                        saldoTotal: increment(montoNuevo), 
+                        ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() 
+                    });
+                }
+
+                await batch.commit();
+                resetDebeForm();
+                debeProducto.focus();
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar: " + error.message);
+            }
+        });
+
+        // --- REGISTRAR PAGO ---
+        pagoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const montoPago = parseFloat(document.getElementById('pago-monto').value);
+            const metodoPago = document.getElementById('pago-metodo').value; 
+            
+            if (isNaN(montoPago) || montoPago <= 0) { alert("Monto inválido"); return; }
+
+            const fechaParaGuardar = obtenerFechaTimestamp(pagoFecha);
+            const batch = db.batch();
+            const increment = firebase.firestore.FieldValue.increment;
+
+            try {
+                const movRef = db.collection("movimientos").doc();
+                batch.set(movRef, {
+                    clienteId: clienteId,
+                    fecha: fechaParaGuardar,
+                    tipo: 'paga',
+                    detalle: 'entregó', 
+                    metodoPago: metodoPago,
+                    cantidad: 0,
+                    precioUnitario: 0,
+                    monto: montoPago
+                });
+
+                const clienteRef = db.collection("clientes").doc(clienteId);
+                // Restamos la deuda
+                batch.update(clienteRef, { 
+                    saldoTotal: increment(-montoPago), 
+                    ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() 
+                });
+
+                await batch.commit();
+                pagoForm.reset();
+                if (pagoFecha) pagoFecha.value = new Date().toISOString().slice(0,10);
+                
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar pago: " + error.message);
+            }
+        });
+
+        // --- BORRAR MOVIMIENTO ---
+        const borrarMovimiento = async (id) => {
+            if (!confirm("¿Borrar movimiento?")) return;
+            try {
+                const movRef = db.collection("movimientos").doc(id);
+                const docSnap = await movRef.get();
+                if (!docSnap.exists) return;
+                
+                const data = docSnap.data();
+                const monto = data.monto || 0;
+                const esDebe = data.tipo === 'debe';
+
+                const batch = db.batch();
+                batch.delete(movRef);
+                
+                const clienteRef = db.collection("clientes").doc(clienteId);
+                const increment = firebase.firestore.FieldValue.increment;
+                
+                // Lógica inversa: Si borro deuda, saldo baja (-). Si borro pago, saldo sube (+).
+                const ajuste = esDebe ? -monto : monto;
+
+                batch.update(clienteRef, { 
+                    saldoTotal: increment(ajuste),
+                    ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await batch.commit();
+                if (movimientoEditandoIdInput.value === id) resetDebeForm();
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al borrar: " + error.message);
+            }
+        };
+
+        // --- CARGAR EDICIÓN ---
+        const cargarFormularioEdicion = (id) => {
+            const mov = movimientosCargados.find(m => m.id === id);
+            if (!mov) return;
+            
+            movimientoEditandoIdInput.value = id;
+            debeCantidad.value = mov.cantidad || 1;
+            debeProducto.value = mov.detalle;
+            debePrecio.value = mov.precioUnitario || '';
+            debeTotal.value = mov.monto || '';
+            
+            if (mov.fecha) {
+                debeFechaOriginalWrapper.style.display = 'block';
+                debeFechaOriginalText.textContent = formatDate(mov.fecha);
+            }
+
+            tituloFormDeuda.textContent = "Editar Deuda";
+            btnSubmitDebe.textContent = "Actualizar Deuda";
+            btnSubmitDebe.className = 'btn btn-warning w-100';
+            btnCancelarEdicion.style.display = 'block';
+            debeProducto.focus();
+        };
+
+        const resetDebeForm = () => {
+            movimientoEditandoIdInput.value = '';
+            debeForm.reset();
+            debeCantidad.value = 1;
+            tituloFormDeuda.textContent = "Agregar Deuda";
+            btnSubmitDebe.textContent = "Agregar";
+            btnSubmitDebe.className = 'btn btn-danger w-100';
+            btnCancelarEdicion.style.display = 'none';
+            debeFechaOriginalWrapper.style.display = 'none';
+            if (debeFecha) debeFecha.value = new Date().toISOString().slice(0,10);
+        };
+        btnCancelarEdicion.addEventListener('click', resetDebeForm);
+
+        // --- LIMPIAR CUENTA (RESET TOTAL) ---
+        btnLimpiarCuenta.addEventListener('click', async () => {
+            if (!confirm(`PELIGRO: ¿Estás seguro de borrar TODO el historial de ${clienteNombre}?`)) return;
+            try {
+                const qs = await db.collection("movimientos").where("clienteId", "==", clienteId).get();
+                const batch = db.batch();
+                qs.forEach(doc => batch.delete(doc.ref));
+                
+                const clienteRef = db.collection("clientes").doc(clienteId);
+                batch.update(clienteRef, { saldoTotal: 0, ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp() });
+                
+                await batch.commit();
+                alert("Cuenta reiniciada a $0.");
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+
+        // --- IMPRIMIR (Con datos reales recalculados) ---
+        btnImprimirCuenta.addEventListener('click', () => {
+            const fechaEmision = new Date().toLocaleDateString('es-AR');
+            const logoUrl = new URL('../../static/images/logo.jpg', window.location.href).href;
+
+            const movsOrdenados = [...movimientosCargados].reverse();
+            let saldoAcumulado = 0;
+            
+            let filas = movsOrdenados.map(mov => {
+                const monto = mov.monto || 0;
+                let debe = '', haber = '';
+                if (mov.tipo === 'debe') {
+                    debe = formatCurrency(monto);
+                    saldoAcumulado += monto;
+                } else {
+                    haber = formatCurrency(monto);
+                    saldoAcumulado -= monto;
+                }
+                return `
+                    <tr>
+                        <td>${formatDate(mov.fecha)}</td>
+                        <td align="center">${mov.cantidad || '-'}</td>
+                        <td>${mov.detalle}</td>
+                        <td align="right">${debe}</td>
+                        <td align="right">${haber}</td>
+                        <td align="right">${formatCurrency(saldoAcumulado)}</td>
+                    </tr>`;
+            }).join('');
+
+            const ventana = window.open('', '_blank', 'width=900,height=600');
+            ventana.document.write(`
+                <html><head><title>Resumen ${clienteNombre}</title>
+                <style>
+                    body { font-family: sans-serif; margin: 20px; }
+                    .header { display: flex; justify-content: space-between; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px;}
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th, td { border: 1px solid #333; padding: 5px; }
+                    th { background: #eee; }
+                </style></head>
+                <body>
+                    <div class="header">
+                        <div><img src="${logoUrl}" height="60" alt="Logo"></div>
+                        <div style="text-align:right">
+                            <h2>${clienteNombre}</h2>
+                            <p>${fechaEmision} | Ferretería  </p>
+                        </div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Fecha</th><th>Cant.</th><th>Detalle</th><th>Debe</th><th>Haber</th><th>Saldo</th></tr></thead>
+                        <tbody>${filas}</tbody>
+                        <tfoot><tr><td colspan="5" align="right"><strong>SALDO FINAL:</strong></td><td align="right"><strong>${formatCurrency(saldoAcumulado)}</strong></td></tr></tfoot>
+                    </table>
+                    <script>setTimeout(() => { window.print(); }, 500);<\/script>
+                </body></html>
+            `);
+            ventana.document.close();
+        });
+
+    </script>
+</body>
+</html>

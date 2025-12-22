@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería - Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../caja/caja_table.html">CAJA</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="clientes.html">CLIENTES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../proveedores/proveedores.html">PROVEEDORES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0 text-danger display-6">Cuentas Corrientes</h1>
+            <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#clienteModal" id="btn-agregar-cliente">
+                <i class="bi bi-person-plus-fill me-2"></i>Nuevo Cliente
+            </button>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="search-nombre" class="form-label fw-bold">Buscar por Nombre:</label>
+                        <input type="text" class="form-control" id="search-nombre" placeholder="Escriba un nombre...">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="checkbox" class="btn-check" id="filter-deudores" autocomplete="off">
+                        <label class="btn btn-outline-danger w-100 fw-bold" for="filter-deudores">
+                            <i class="bi bi-sort-down-alt me-2"></i>Mostrar Deudores (Mayor a Menor)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Última Actualización</th>
+                                <th>Saldo Deudor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-clientes">
+                            <tr><td colspan="4" class="text-center p-5">Cargando datos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="clienteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nuevo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cliente-form">
+                        <input type="hidden" id="cliente-id">
+                        <div class="mb-3">
+                            <label for="nombre-cliente" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombre-cliente" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono-cliente" class="form-label">Teléfono (Opcional)</label>
+                            <input type="tel" class="form-control" id="telefono-cliente">
+                        </div>
+                    </form>
+                </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btn-guardar-cliente">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+            authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+            projectId: "ferreteria-giraudo-demo",
+            storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+            messagingSenderId: "868547712282",
+            appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+};
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log("Error de persistencia (múltiples pestañas).");
+                } else if (err.code == 'unimplemented') {
+                    console.log("El navegador no soporta persistencia.");
+                }
+        });
+
+        const db = firebase.firestore();
+
+        const tablaClientes = document.getElementById('tabla-clientes');
+        const searchNombre = document.getElementById('search-nombre');
+        const filterDeudores = document.getElementById('filter-deudores'); // Referencia al botón nuevo
+        
+        const btnAgregarCliente = document.getElementById('btn-agregar-cliente');
+        const btnGuardarCliente = document.getElementById('btn-guardar-cliente');
+        const modalTitle = document.getElementById('modalTitle');
+        const clienteForm = document.getElementById('cliente-form');
+        const nombreClienteInput = document.getElementById('nombre-cliente');
+        const telefonoClienteInput = document.getElementById('telefono-cliente');
+        const clienteIdInput = document.getElementById('cliente-id');
+        const clienteModal = new bootstrap.Modal(document.getElementById('clienteModal'));
+
+        nombreClienteInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Evita que se recargue la página si el form intenta enviarse
+                btnGuardarCliente.click(); // Simula el clic en el botón Guardar
+            }
+        });
+        
+        let clientesCargados = [];
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        const formatDate = (timestamp) => {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            return timestamp.toDate().toLocaleDateString('es-AR');
+        };
+
+        // --- LÓGICA DE FILTRADO ACTUALIZADA ---
+        const actualizarVista = () => {
+            const filtroNombre = searchNombre.value.toLowerCase();
+            const mostrarSoloDeudores = filterDeudores.checked;
+            
+            let clientesAMostrar = [...clientesCargados]; // Copia para no romper el original
+
+            // 1. Filtro Nombre
+            if (filtroNombre) {
+                clientesAMostrar = clientesAMostrar.filter(c => c.nombre_lowercase.includes(filtroNombre));
+            }
+
+            // 2. Filtro Deudores (Si el botón está presionado)
+            if (mostrarSoloDeudores) {
+                // CORRECCIÓN: Usamos > 0.01 para evitar "deudores fantasma" con residuos decimales
+                clientesAMostrar = clientesAMostrar.filter(c => (c.saldoTotal || 0) > 0.01);
+                // Ordena de mayor deuda a menor
+                clientesAMostrar.sort((a, b) => (b.saldoTotal || 0) - (a.saldoTotal || 0));
+            } 
+
+            renderClientes(clientesAMostrar);
+        };
+
+        const renderClientes = (clientes) => {
+            tablaClientes.innerHTML = '';
+            if (clientes.length === 0) {
+                 tablaClientes.innerHTML = '<tr><td colspan="4" class="text-center p-5">No se encontraron clientes.</td></tr>';
+                 return;
+            }
+            clientes.forEach(cliente => {
+                const tr = document.createElement('tr');
+                tr.className = 'cliente-row';
+                tr.dataset.id = cliente.id;
+                tr.dataset.nombre = cliente.nombre;
+                tr.dataset.telefono = cliente.telefono || ''; 
+
+                // CORRECCIÓN: Definimos si es deudor con tolerancia decimal
+                const saldo = cliente.saldoTotal || 0;
+                const esDeudor = saldo > 0.01;
+
+                tr.innerHTML = `
+                    <td class="fw-bold">${cliente.nombre}</td>
+                    <td>${formatDate(cliente.ultimaActualizacion)}</td>
+                    <td class="fw-bold ${esDeudor ? 'text-danger' : 'text-success'}">
+                        ${formatCurrency(saldo)}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning btn-editar" data-id="${cliente.id}"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn btn-sm btn-danger btn-borrar" data-id="${cliente.id}"><i class="bi bi-trash-fill"></i></button>
+                    </td>
+                `;
+                tablaClientes.appendChild(tr);
+
+                tr.querySelector('.btn-editar').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleEdit(e.currentTarget.dataset.id);
+                });
+                tr.querySelector('.btn-borrar').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleDelete(e.currentTarget.dataset.id);
+                });
+                tr.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const nombre = e.currentTarget.dataset.nombre;
+                    const telefono = e.currentTarget.dataset.telefono; 
+                    window.location.href = `detalle_cliente.html?id=${id}&nombre=${encodeURIComponent(nombre)}&telefono=${encodeURIComponent(telefono)}`;
+                });
+            });
+        };
+
+        // Carga inicial
+        db.collection("clientes").orderBy("nombre_lowercase", "asc").onSnapshot((snapshot) => {
+            clientesCargados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            actualizarVista();
+        }, (error) => {
+            console.error("Error al leer clientes: ", error);
+            tablaClientes.innerHTML = `<tr><td colspan="4" class="text-center p-5 text-danger"><b>Error al cargar clientes.</b> Revise la consola (F12).</td></tr>`;
+        });
+
+        // Eventos Filtros
+        searchNombre.addEventListener('input', actualizarVista);
+        filterDeudores.addEventListener('change', actualizarVista); // Escuchar cambios en el botón de filtro
+
+        btnAgregarCliente.addEventListener('click', () => {
+            modalTitle.textContent = 'Nuevo Cliente';
+            clienteForm.reset();
+            clienteIdInput.value = '';
+        });
+
+        btnGuardarCliente.addEventListener('click', async () => {
+            // 1. Limpiamos espacios al inicio y final para evitar "Juan " vs "Juan"
+            const nombre = nombreClienteInput.value.trim(); 
+            const telefono = telefonoClienteInput.value.trim(); 
+            const id = clienteIdInput.value;
+            
+            if (!nombre) { alert('El nombre es obligatorio.'); return; }
+
+            const nombreLower = nombre.toLowerCase();
+            
+            const existeDuplicado = clientesCargados.some(c => {
+                const nombreCliente = c.nombre_lowercase || c.nombre.toLowerCase();
+                
+                return nombreCliente === nombreLower && c.id !== id;
+            });
+
+            if (existeDuplicado) {
+                alert(`⚠️ Ya existe un cliente llamado "${nombre}".\nPor favor, verificá la lista general.`);
+                return; // Detenemos todo aquí.
+            }
+
+            btnGuardarCliente.disabled = true;
+            btnGuardarCliente.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+
+            const data = {
+                nombre: nombre,
+                nombre_lowercase: nombreLower, // Guardamos siempre en minúsculas para buscar fácil
+                telefono: telefono || "",
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (id) {
+                    await db.collection("clientes").doc(id).update(data);
+                } else {
+                    // Al crear uno nuevo, inicializamos el saldo en 0
+                    data.saldoTotal = 0;
+                    await db.collection("clientes").add(data);
+                }
+                clienteModal.hide();
+            } catch (error) {
+                console.error("Error al guardar cliente: ", error);
+                alert("Error al guardar: " + error.message);
+            } finally {
+                // Restauramos el botón pase lo que pase
+                btnGuardarCliente.disabled = false;
+                btnGuardarCliente.textContent = "Guardar";
+            }
+        });
+
+        const handleEdit = (id) => {
+            const cliente = clientesCargados.find(c => c.id === id);
+            if (!cliente) return;
+            modalTitle.textContent = 'Editar Cliente';
+            clienteIdInput.value = cliente.id;
+            nombreClienteInput.value = cliente.nombre;
+            telefonoClienteInput.value = cliente.telefono || "";
+            clienteModal.show();
+        };
+
+        const handleDelete = async (id) => {
+            const cliente = clientesCargados.find(c => c.id === id);
+            if (!cliente) return;
+            // CORRECCIÓN: Permitir borrar si la deuda es solo "basura decimal"
+            if ((cliente.saldoTotal || 0) > 0.01) {
+                alert("Error: No se puede borrar un cliente que tiene saldo deudor.");
+                return;
+            }
+            if (confirm(`¿Estás seguro de que quieres borrar a ${cliente.nombre}? Esta acción no se puede deshacer.`)) {
+                try {
+                    await db.collection("clientes").doc(id).delete();
+                } catch (error) {
+                    console.error("Error al borrar: ", error);
+                    alert("Error al borrar: " + error.message);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

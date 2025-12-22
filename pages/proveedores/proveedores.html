@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Proveedores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../home.html">HOME</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../caja/caja_table.html">CAJA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../clientes/clientes.html">CLIENTES</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../cheques.html">CHEQUES</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="proveedores.html">PROVEEDORES</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a> 
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0 text-danger display-6">Proveedores</h1>
+            <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#proveedorModal" id="btn-agregar-proveedor">
+                <i class="bi bi-truck me-2"></i>Nuevo Proveedor
+            </button>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="search-nombre" class="form-label fw-bold">Buscar por Nombre:</label>
+                        <input type="text" class="form-control" id="search-nombre" placeholder="Escriba un nombre...">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <input type="checkbox" class="btn-check" id="filter-deuda" autocomplete="off">
+                        <label class="btn btn-outline-danger w-100 fw-bold" for="filter-deuda">
+                            <i class="bi bi-sort-down-alt me-2"></i>Mostrar Deudores (Mayor a Menor)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Localidad</th>
+                                <th>Última Actualización</th>
+                                <th>Saldo Adeudado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-proveedores">
+                            <tr><td colspan="5" class="text-center p-5">Cargando datos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="proveedorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="proveedor-form">
+                        <input type="hidden" id="proveedor-id">
+                        <div class="mb-3">
+                            <label for="nombre-proveedor" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre-proveedor" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono-proveedor" class="form-label">Teléfono (Opcional)</label>
+                            <input type="tel" class="form-control" id="telefono-proveedor">
+                        </div>
+                         <div class="mb-3">
+                            <label for="localidad-proveedor" class="form-label">Localidad (Opcional)</label>
+                            <input type="text" class="form-control" id="localidad-proveedor">
+                        </div>
+                    </form>
+                </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btn-guardar-proveedor">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log("Error de persistencia (múltiples pestañas).");
+                } else if (err.code == 'unimplemented') {
+                    console.log("El navegador no soporta persistencia.");
+                }
+        });
+            
+        const db = firebase.firestore();
+
+        const tablaProveedores = document.getElementById('tabla-proveedores');
+        const searchNombre = document.getElementById('search-nombre');
+        const filterDeuda = document.getElementById('filter-deuda'); 
+        
+        const btnAgregarProveedor = document.getElementById('btn-agregar-proveedor');
+        const btnGuardarProveedor = document.getElementById('btn-guardar-proveedor');
+        const modalTitle = document.getElementById('modalTitle');
+        const proveedorForm = document.getElementById('proveedor-form');
+        const nombreProveedorInput = document.getElementById('nombre-proveedor');
+        const telefonoProveedorInput = document.getElementById('telefono-proveedor'); 
+        const localidadProveedorInput = document.getElementById('localidad-proveedor'); 
+        const proveedorIdInput = document.getElementById('proveedor-id');
+        const proveedorModal = new bootstrap.Modal(document.getElementById('proveedorModal'));
+        
+        nombreProveedorInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                btnGuardarProveedor.click(); 
+            }
+        });
+        
+        let proveedoresCargados = []; 
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        const formatDate = (timestamp) => {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            return timestamp.toDate().toLocaleDateString('es-AR');
+        };
+
+        // --- Función Actualizar Vista ---
+        const actualizarVista = () => {
+            const filtroNombre = searchNombre.value.toLowerCase();
+            const mostrarSoloDeudores = filterDeuda.checked;
+
+            let proveedoresAMostrar = [...proveedoresCargados];
+
+            // 1. Filtrar por Nombre
+            if (filtroNombre) {
+                proveedoresAMostrar = proveedoresAMostrar.filter(p => p.nombre_lowercase.includes(filtroNombre));
+            }
+
+            // 2. Filtrar y Ordenar por Deuda
+            if (mostrarSoloDeudores) {
+                // CORRECCIÓN: Usamos > 0.01 para evitar residuos decimales
+                proveedoresAMostrar = proveedoresAMostrar.filter(p => (p.saldoDeudor || 0) > 0.01);
+                // Ordena: Mayor deuda arriba
+                proveedoresAMostrar.sort((a, b) => (b.saldoDeudor || 0) - (a.saldoDeudor || 0));
+            } 
+
+            renderProveedores(proveedoresAMostrar);
+        };
+
+        const renderProveedores = (proveedores) => {
+            tablaProveedores.innerHTML = '';
+            if (proveedores.length === 0) {
+                 tablaProveedores.innerHTML = '<tr><td colspan="5" class="text-center p-5">No se encontraron proveedores.</td></tr>';
+                 return;
+            }
+            proveedores.forEach(proveedor => {
+                const tr = document.createElement('tr');
+                tr.className = 'proveedor-row';
+                tr.dataset.id = proveedor.id;
+                tr.dataset.nombre = proveedor.nombre;
+                tr.dataset.telefono = proveedor.telefono || ''; 
+                tr.dataset.localidad = proveedor.localidad || '';
+
+                // CORRECCIÓN: Tolerancia a decimales basura
+                const saldo = parseFloat(proveedor.saldoDeudor) || 0;
+                const esDeudor = saldo > 0.01;
+
+                tr.innerHTML = `
+                    <td class="fw-bold">${proveedor.nombre}</td>
+                    <td>${proveedor.localidad || ''}</td>
+                    <td>${formatDate(proveedor.ultimaActualizacion)}</td>
+                    <td class="fw-bold ${esDeudor ? 'text-danger' : 'text-success'}">
+                        ${formatCurrency(saldo)} </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning btn-editar" data-id="${proveedor.id}"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn btn-sm btn-danger btn-borrar" data-id="${proveedor.id}"><i class="bi bi-trash-fill"></i></button>
+                    </td>
+                `;
+                tablaProveedores.appendChild(tr);
+
+                tr.querySelector('.btn-editar').addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    handleEdit(e.currentTarget.dataset.id);
+                });
+                tr.querySelector('.btn-borrar').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleDelete(e.currentTarget.dataset.id);
+                });
+                
+                tr.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const nombre = e.currentTarget.dataset.nombre;
+                    const telefono = e.currentTarget.dataset.telefono;
+                    const localidad = e.currentTarget.dataset.localidad;
+                    window.location.href = `detalle_proveedor.html?id=${id}&nombre=${encodeURIComponent(nombre)}&telefono=${encodeURIComponent(telefono)}&localidad=${encodeURIComponent(localidad)}`;
+                });
+            });
+        };
+
+        // Listener de carga inicial
+        db.collection("proveedores").orderBy("nombre_lowercase", "asc").onSnapshot((snapshot) => {
+            proveedoresCargados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            actualizarVista();
+        }, (error) => {
+            console.error("Error al leer proveedores: ", error);
+            tablaProveedores.innerHTML = `<tr><td colspan="5" class="text-center p-5 text-danger"><b>Error al cargar proveedores.</b> Revise la consola (F12).</td></tr>`;
+        });
+
+        // Listeners de filtros
+        searchNombre.addEventListener('input', actualizarVista);
+        filterDeuda.addEventListener('change', actualizarVista);
+
+        btnAgregarProveedor.addEventListener('click', () => {
+            modalTitle.textContent = 'Nuevo Proveedor';
+            proveedorForm.reset();
+            proveedorIdInput.value = '';
+        });
+
+        btnGuardarProveedor.addEventListener('click', async () => {
+            const nombre = nombreProveedorInput.value;
+            const telefono = telefonoProveedorInput.value; 
+            const localidad = localidadProveedorInput.value;
+            const id = proveedorIdInput.value;
+            
+            if (!nombre) {
+                alert('El nombre es obligatorio.');
+                return;
+            }
+
+            const data = {
+                nombre: nombre,
+                nombre_lowercase: nombre.toLowerCase(),
+                telefono: telefono || "",
+                localidad: localidad || "",
+                ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (id) {
+                    await db.collection("proveedores").doc(id).update(data);
+                } else {
+                    data.saldoDeudor = 0.0;
+                    await db.collection("proveedores").add(data);
+                }
+                proveedorModal.hide();
+            } catch (error) {
+                console.error("Error al guardar proveedor: ", error);
+                alert("Error al guardar: " + error.message);
+            }
+        });
+
+        const handleEdit = (id) => {
+            const proveedor = proveedoresCargados.find(p => p.id === id);
+            if (!proveedor) return;
+            
+            modalTitle.textContent = 'Editar Proveedor';
+            proveedorIdInput.value = proveedor.id;
+            nombreProveedorInput.value = proveedor.nombre;
+            telefonoProveedorInput.value = proveedor.telefono || ""; 
+            localidadProveedorInput.value = proveedor.localidad || "";
+            proveedorModal.show();
+        };
+
+        const handleDelete = async (id) => {
+            const proveedor = proveedoresCargados.find(p => p.id === id);
+            if (!proveedor) return;
+            
+            // CORRECCIÓN: Permitir borrar si la deuda es solo "basura decimal"
+            if (proveedor.saldoDeudor > 0.01) {
+                alert("Error: No se puede borrar un proveedor al que se le debe dinero.");
+                return;
+            }
+            
+            if (confirm(`¿Estás seguro de que quieres borrar a ${proveedor.nombre}? Esta acción no se puede deshacer.`)) {
+                try {
+                    await db.collection("proveedores").doc(id).delete();
+                } catch (error) {
+                    console.error("Error al borrar proveedor: ", error);
+                    alert("Error al borrar: " + error.message);
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>

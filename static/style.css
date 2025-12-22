@@ -1,0 +1,242 @@
+/* Estilos Generales para Ferretería   */
+
+/* --- Arreglo Menú Corrido --- */
+.navbar {
+    width: 100vw; /* Ocupa todo el ancho de la ventana */
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important; /* Sombra sutil */
+}
+
+html {
+    overflow-y: scroll; /* Mantiene la barra de scroll para evitar saltos */
+} 
+
+body { 
+    background-color: #f8f9fa !important; /* Fondo gris claro */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* --- Estilos Barra Navegación --- */
+.navbar-brand { 
+    font-weight: bold !important; 
+}
+
+/* --- Estilos Comunes Tablas --- */
+.table th, 
+.table td { 
+    vertical-align: middle !important; 
+}
+.table-hover tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* --- Estilos Clickeables (Filas Clientes/Proveedores) --- */
+.cliente-row,
+.proveedor-row { 
+    cursor: pointer; 
+}
+
+/* --- Estilos Comunes Formularios y Botones --- */
+.form-control:focus,
+.form-select:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+.btn-danger {
+     background-color: #dc3545 !important;
+     border-color: #dc3545 !important;
+}
+.btn-danger:hover {
+     background-color: #bb2d3b !important; 
+     border-color: #b02a37 !important;
+ }
+ .btn-outline-secondary:hover {
+     background-color: #6c757d;
+     color: white;
+ }
+
+/* --- Estilos Comunes Cajas Resumen --- */
+.summary-box, 
+.saldo-box { 
+    background-color: #e9ecef !important; 
+    border-radius: .375rem !important; 
+}
+
+/* --- Clases específicas (ej: movimientos) --- */
+.movimiento-compra { color: #dc3545 !important; } 
+.movimiento-pago { color: #198754 !important; } 
+.movimiento-compra-pagada { text-decoration: line-through; color: #6c757d !important;}
+
+/* --- Badges de Estado Cheques --- */
+.badge.bg-en-cartera { background-color: #ffc107 !important; color: #000 !important; }
+.badge.bg-depositado { background-color: #0d6efd !important; color: white !important;} 
+.badge.bg-entregado { background-color: #6c757d !important; color: white !important;} 
+.badge.bg-rechazado { background-color: #dc3545 !important; color: white !important;}
+
+/* --- Clases para Impresión --- */
+@media print {
+    /* --- Ocultar elementos no deseados --- */
+    .no-print, 
+    nav.navbar, 
+    button, 
+    .modal, 
+    form#item-form /* Oculta específicamente el form de agregar items */
+    { 
+        display: none !important; 
+    } 
+
+    /* --- Asegurar visibilidad del presupuesto --- */
+    body * { visibility: hidden !important; } /* Oculta todo primero */
+    #presupuesto-preview, 
+    #presupuesto-preview * { 
+        visibility: visible !important; /* Muestra solo el área del preview */
+    } 
+    /* --- Posicionamiento y tamaño del área de impresión --- */
+    #presupuesto-preview { 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important; /* Ocupa todo el ancho */
+        border: none !important; 
+        padding: 0 !important; /* Quitamos padding extra del preview */
+        margin: 0 !important; 
+        box-shadow: none !important;
+        background-color: white !important; /* Fondo blanco explícito */
+    }
+    
+    /* --- Estilos generales para impresión --- */
+    body { 
+        font-size: 10pt !important; 
+        background-color: white !important; 
+        margin: 0 !important; /* Sin márgenes extra en body */
+        padding: 0 !important;
+    }
+    /* Quitamos estilos de card que no aplican */
+    .card { border: none !important; box-shadow: none !important; } 
+
+    /* --- Estilos específicos Encabezado Presupuesto --- */
+    #presupuesto-header { 
+        display: flex !important; /* Usa flexbox para alinear */
+        justify-content: space-between !important; /* Espacio entre elementos */
+        align-items: flex-start !important; /* Alinear arriba */
+        padding-bottom: 0.8rem !important; 
+        border-bottom: 1px solid #6c757d !important; /* Borde más sutil */
+        width: 100% !important; 
+        margin-bottom: 1.5rem !important; /* Espacio antes del cliente */
+    }
+    #header-logo { 
+        flex: 0 0 130px !important; /* Ancho fijo para logo */
+        text-align: left !important; 
+    }
+    #header-logo img { 
+        max-width: 100% !important; 
+        max-height: 65px !important; /* Tamaño del logo */
+    }
+    #header-info { 
+        flex-grow: 1 !important; /* Ocupa espacio central */
+        text-align: center !important; 
+        padding: 0 0.5rem !important; 
+    }
+    #header-details { 
+        flex: 0 0 170px !important; /* Ancho fijo MAYOR para fecha/número */
+        text-align: right !important; 
+        font-size: 9pt !important; 
+    }
+    
+    #header-info h2 { font-size: 1.1rem !important; font-weight: bold !important; margin:0 !important;}
+    #header-info p { font-size: 0.8rem !important; margin:0 !important; }
+    #header-details h3 { display: none !important; } /* Oculta "PRESUPUESTO" aquí si ya está en el centro */
+    #header-details p { margin-bottom: 0.1rem !important; } 
+    
+    /* --- Estilos Cliente --- */
+     #cliente-container { 
+        border: 1px solid #ccc !important; 
+        padding: 0.5rem 0.75rem !important; /* Menos padding */
+        margin-top: 1rem !important; 
+        margin-bottom: 1rem !important; 
+        border-radius: 0.25rem !important; 
+    }
+    #cliente-container strong { 
+        font-size: 10pt !important; 
+        font-weight: bold !important; 
+        border-bottom: none !important; /* Quita borde editable */
+    }
+
+    /* --- Estilos Tabla Items --- */
+    .table { 
+        font-size: 9pt !important; 
+        width: 100% !important; /* Asegura ancho completo */
+        border: 1px solid #dee2e6 !important; 
+        border-collapse: collapse !important; /* Colapsa bordes */
+    }
+     .table thead th { 
+        background-color: #e9ecef !important; 
+        color: #000 !important; 
+        font-weight: bold !important; 
+        border: 1px solid #dee2e6 !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+    .table td { 
+        border: 1px solid #dee2e6 !important;
+        padding: 0.3rem 0.5rem !important; /* Menos padding en celdas */
+    }
+    tr { page-break-inside: avoid !important; } /* Intenta evitar cortes de fila */
+
+    /* --- Estilos Totales --- */
+    .table tfoot td {
+        border-top: 2px solid #333 !important; /* Línea más gruesa antes del total */
+        font-weight: bold !important;
+    }
+     .table tfoot tr.fs-5 td { /* Fila TOTAL */
+        font-size: 11pt !important;
+        background-color: #f8f9fa !important; /* Fondo gris claro para total */
+     }
+
+    /* --- Otros estilos impresión --- */
+    .text-danger, .text-success, .text-primary, .text-warning { color: #000 !important; }
+    .badge { border: 1px solid #ccc !important; background-color: white !important; color: black !important; padding: 0.2em 0.4em !important; font-size: 8pt !important;}
+    a { text-decoration: none !important; color: black !important;}
+    
+    /* Oculta pie de página si no lo quieres */
+    #presupuesto-footer { display: none !important; } 
+}
+
+/* --- Estilos Página Home --- */
+.hero-section {
+    position: relative;
+    height: 60vh;
+    background-image: url('images/home.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Sombra oscura sobre la imagen */
+}
+
+.hero-text {
+    position: relative; /* Para que esté por encima del overlay */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra en el texto para legibilidad */
+}
+
+.nav-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    border-radius: 1rem; /* Bordes más redondeados */
+}
+
+.nav-card:hover {
+    transform: translateY(-10px); /* Efecto de "levantar" la tarjeta */
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+}
+
+.nav-card .card-body {
+    padding: 2rem;
+}

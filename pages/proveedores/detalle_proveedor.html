@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Detalle de Proveedor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css"> 
+    <style>
+        .saldo-box { background-color: #e9ecef; }
+        .movimiento-compra { color: #dc3545; } /* Rojo (Deuda) */
+        .movimiento-paga { color: #198754; } /* Verde (Pago) */
+        .movimiento-bonif { color: #0d6efd; } /* Azul (Descuento) */
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../caja/caja_table.html">CAJA</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../clientes/clientes.html">CLIENTES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="proveedores.html">PROVEEDORES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4 saldo-box rounded">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <a href="proveedores.html" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver a Proveedores
+                    </a>
+                    
+                    <div class="d-flex flex-column gap-2 align-items-end">
+                        <button class="btn btn-danger btn-sm" id="btn-limpiar-cuenta-proveedor">
+                            <i class="bi bi-trash3-fill me-1"></i> Limpiar Cuenta
+                        </button>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCalculadoraInterna">
+                            <i class="bi bi-calculator me-1"></i> Calculadora Bonif.
+                        </button>
+                    </div>
+                </div>
+                <h1 id="nombre-proveedor" class="mb-0 text-danger display-6">Cargando...</h1>
+                <h4 id="telefono-proveedor" class="text-muted fw-normal"></h4>
+                <h4 id="localidad-proveedor" class="text-muted fw-normal"></h4>
+                <h2 class="text-muted mt-2">Saldo adeudado total: 
+                    <strong id="saldo-total" class="text-dark">$0.00</strong>
+                </h2>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-cart-plus me-2"></i>Registrar Nueva Compra</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="compra-form">
+                            
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label for="compra-tipo" class="form-label">Tipo</label>
+                                    <select class="form-select" id="compra-tipo">
+                                        <option value="FAC A">FAC A</option>
+                                        <option value="FAC B">FAC B</option>
+                                        <option value="FAC C">FAC C</option>
+                                        <option value="Nota Débito">Nota Débito</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <label for="compra-numero" class="form-label">N° Comprobante</label>
+                                    <input type="text" class="form-control" id="compra-numero" placeholder="Ej: 0001-12345678" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                     <label for="compra-monto" class="form-label">Monto Total</label>
+                                     <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="compra-monto" step="any" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="compra-fecha" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="compra-fecha" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="compra-bonif-info" class="form-label text-muted small">Info Bonificación (Opcional - Solo texto)</label>
+                                <input type="text" class="form-control form-control-sm" id="compra-bonif-info" placeholder="Ej: 5% si paga antes del 10">
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">Cargar Compra</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Registrar Pago / Entrega</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="pago-form">
+                             <div class="mb-3">
+                                <label for="pago-monto" class="form-label">Monto Entregado (Dinero)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="pago-monto" step="any" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-5">
+                                    <label for="pago-tipo-comp" class="form-label">Tipo</label>
+                                    <select class="form-select" id="pago-tipo-comp">
+                                        <option value="Recibo">Recibo</option>
+                                        <option value="Nota Crédito">Nota Crédito</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-7">
+                                    <label for="pago-numero" class="form-label">N° Comprobante</label>
+                                    <input type="text" class="form-control" id="pago-numero" placeholder="Ej: 0001-00000054">
+                                </div>
+                            </div>
+
+                            <div class="mb-3 bg-light p-2 rounded border">
+                                <label for="pago-descuento" class="form-label text-primary small fw-bold">
+                                    <i class="bi bi-tag-fill"></i> Descuento/Bonif. Obtenido (Opcional)
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="pago-descuento" step="any" placeholder="0.00">
+                                </div>
+                                <div class="form-text small">Este monto TAMBIÉN se restará de la deuda.</div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-7">
+                                    <label for="pago-detalle" class="form-label">Detalle (Medio de Pago)</label>
+                                    <input type="text" class="form-control" id="pago-detalle" placeholder="Ej: Efvo, Cheque, Transf...">
+                                </div>
+                                <div class="col-md-5">
+                                     <label for="pago-fecha" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="pago-fecha" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Registrar Pago</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-7">
+                <h3 class="text-dark">Movimientos de la Cuenta</h3>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Detalle</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Monto</th>
+                                        <th class="text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-movimientos">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="modalCalculadoraInterna" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-light">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-calculator me-2"></i>Calculadora de Bonificación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monto Original ($)</label>
+                        <input type="number" class="form-control form-control-lg" id="calc-monto" placeholder="0.00" step="any">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Bonificación / Descuento (%)</label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" class="form-control" id="calc-porcentaje" placeholder="Ej: 15" step="any">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-white rounded border mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Descuento (Ahorro):</span>
+                            <span class="text-success fw-bold" id="res-ahorro">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-dark fw-bold">TOTAL A PAGAR:</span>
+                            <span class="text-primary fs-4 fw-bold" id="res-total">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-success w-100 py-2 fw-bold" id="btn-usar-calculo">
+                        <i class="bi bi-check-circle-fill me-2"></i> Usar en Formulario de Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 1. CONFIGURACIÓN
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                console.log("Persistencia:", err.code);
+            });
+
+        const db = firebase.firestore();
+        const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp; 
+
+        // --- Referencias del DOM ---
+        const nombreProveedorEl = document.getElementById('nombre-proveedor');
+        const telefonoProveedorEl = document.getElementById('telefono-proveedor');
+        const localidadProveedorEl = document.getElementById('localidad-proveedor');
+        const saldoTotalEl = document.getElementById('saldo-total');
+        const tablaMovimientos = document.getElementById('tabla-movimientos');
+        
+        // Formularios
+        const compraForm = document.getElementById('compra-form');
+        const compraTipo = document.getElementById('compra-tipo');
+        const compraNumero = document.getElementById('compra-numero');
+        const compraMonto = document.getElementById('compra-monto');
+        const compraFecha = document.getElementById('compra-fecha');
+        const compraBonifInfo = document.getElementById('compra-bonif-info');
+
+        const pagoForm = document.getElementById('pago-form');
+        const pagoMonto = document.getElementById('pago-monto');
+        const pagoTipoComp = document.getElementById('pago-tipo-comp');
+        const pagoNumero = document.getElementById('pago-numero');
+        const pagoDescuento = document.getElementById('pago-descuento');
+        const pagoDetalle = document.getElementById('pago-detalle');
+        const pagoFecha = document.getElementById('pago-fecha');
+
+        const btnLimpiarCuenta = document.getElementById('btn-limpiar-cuenta-proveedor');
+
+        // Variables
+        let proveedorId = null;
+        let proveedorNombre = '';
+        let saldoCalculadoReal = 0; // <--- LA VERDAD ABSOLUTA
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        
+        const formatDate = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            if (typeof timestamp === 'string') {
+                 const parts = timestamp.split('-');
+                 if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString('es-AR');
+            return 'N/A';
+        };
+
+        // =========================================================================
+        // LÓGICA PRINCIPAL
+        // =========================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            proveedorId = urlParams.get('id');
+            proveedorNombre = decodeURIComponent(urlParams.get('nombre') || 'Proveedor');
+            const telefono = decodeURIComponent(urlParams.get('telefono') || '');
+            const localidad = decodeURIComponent(urlParams.get('localidad') || '');
+
+            if (!proveedorId) {
+                alert('Error: No se especificó un proveedor.');
+                window.location.href = 'proveedores.html';
+                return;
+            }
+
+            nombreProveedorEl.textContent = proveedorNombre;
+            if (telefono) telefonoProveedorEl.innerHTML = `<i class="bi bi-telephone-fill me-2"></i>${telefono}`;
+            if (localidad) localidadProveedorEl.innerHTML = `<i class="bi bi-geo-alt-fill me-2"></i>${localidad}`;
+            
+            const hoy = new Date().toISOString().slice(0, 10);
+            if(compraFecha) compraFecha.value = hoy;
+            if(pagoFecha) pagoFecha.value = hoy;
+
+            // 1. ESCUCHAR MOVIMIENTOS (CÁLCULO EN VIVO)
+            db.collection("movimientos_proveedor")
+                .where("proveedorId", "==", proveedorId)
+                .orderBy("fecha", "desc")
+                .onSnapshot((snapshot) => {
+                    tablaMovimientos.innerHTML = '';
+                    saldoCalculadoReal = 0; // Reiniciamos la cuenta desde cero siempre
+
+                    if (snapshot.empty) {
+                        tablaMovimientos.innerHTML = '<tr><td colspan="5" class="text-center p-3">No hay movimientos registrados.</td></tr>';
+                        actualizarDisplaySaldo(0);
+                        verificarYCorregirSaldoEnBD(0);
+                        return;
+                    }
+
+                    // Recorremos y sumamos/restamos
+                    snapshot.forEach(doc => {
+                        const mov = { id: doc.id, ...doc.data() };
+                        const monto = parseFloat(mov.monto) || 0;
+
+                        // LÓGICA DE SUMA:
+                        // Compra = Aumenta Deuda (+)
+                        // Pago o Bonificación = Baja Deuda (-)
+                        if (mov.tipo === 'compra') {
+                            saldoCalculadoReal += monto;
+                        } else {
+                            saldoCalculadoReal -= monto;
+                        }
+
+                        // Renderizado en tabla
+                        const tr = document.createElement('tr');
+                        let tipoBadge = '';
+                        let claseMonto = '';
+                        let signoMonto = '';
+
+                        if (mov.tipo === 'compra') {
+                            tipoBadge = '<span class="badge bg-danger">Compra</span>';
+                            claseMonto = 'movimiento-compra fw-bold';
+                            signoMonto = ''; 
+                        } else if (mov.tipo === 'pago') {
+                            tipoBadge = '<span class="badge bg-success">Pago</span>';
+                            claseMonto = 'movimiento-pago fw-bold';
+                            signoMonto = '- '; 
+                        } else if (mov.tipo === 'bonificacion') {
+                            tipoBadge = '<span class="badge bg-primary">Bonif.</span>';
+                            claseMonto = 'movimiento-bonif fw-bold';
+                            signoMonto = '- '; 
+                        }
+
+                        const fechaMostrar = formatDate(mov.fechaManual || mov.fecha);
+                        let detalleExtra = '';
+                        if (mov.bonifInfo) detalleExtra = `<br><small class="text-muted">${mov.bonifInfo}</small>`;
+
+                        tr.innerHTML = `
+                            <td>${fechaMostrar}</td>
+                            <td>${mov.descripcion}${detalleExtra}</td>
+                            <td>${tipoBadge}</td>
+                            <td class="text-end ${claseMonto}">${signoMonto}${formatCurrency(mov.monto)}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-danger btn-borrar" data-id="${mov.id}" data-tipo="${mov.tipo}" data-monto="${mov.monto}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tablaMovimientos.appendChild(tr);
+                    });
+
+                    // 2. ACTUALIZAR PANTALLA
+                    actualizarDisplaySaldo(saldoCalculadoReal);
+
+                    // 3. ACTUALIZAR BD SI ESTÁ MAL
+                    verificarYCorregirSaldoEnBD(saldoCalculadoReal);
+
+                }, (error) => console.error("Error leyendo movimientos: ", error));
+        });
+
+        // Función Visual: Define colores Rojo/Verde
+        const actualizarDisplaySaldo = (saldo) => {
+            saldoTotalEl.textContent = formatCurrency(saldo);
+            // Si debe más de 1 centavo -> ROJO
+            if (saldo > 0.01) {
+                saldoTotalEl.className = 'text-danger fw-bold display-4';
+            } 
+            // Si es 0 o saldo a favor (negativo en deuda) -> VERDE
+            else {
+                saldoTotalEl.className = 'text-success fw-bold display-4';
+            }
+        };
+
+        // Función Autocorrectora
+        const verificarYCorregirSaldoEnBD = async (saldoReal) => {
+            try {
+                const docRef = db.collection("proveedores").doc(proveedorId);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const saldoGuardado = doc.data().saldoDeudor || 0;
+                    // Si difiere en más de $1, actualizamos
+                    if (Math.abs(saldoGuardado - saldoReal) > 1) {
+                        console.log(`Corrigiendo saldo proveedor: ${saldoGuardado} -> ${saldoReal}`);
+                        docRef.update({ 
+                            saldoDeudor: saldoReal,
+                            ultimaActualizacion: serverTimestamp()
+                        });
+                    }
+                }
+            } catch (e) { console.error("Error verificando saldo BD", e); }
+        };
+
+        // =========================================================================
+        // ACCIONES
+        // =========================================================================
+
+        // COMPRA
+        compraForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tipo = compraTipo.value;
+            const numero = compraNumero.value.trim();
+            const descripcionFinal = `${tipo} - ${numero}`;
+            const monto = parseFloat(compraMonto.value);
+            const fechaManual = compraFecha.value;
+            const bonifInfo = compraBonifInfo.value.trim();
+
+            if (!numero || isNaN(monto) || monto <= 0 || !fechaManual) {
+                alert("Datos incompletos."); return;
+            }
+
+            const nuevoMov = {
+                proveedorId: proveedorId,
+                fecha: serverTimestamp(), 
+                fechaManual: fechaManual, 
+                tipo: 'compra',
+                descripcion: descripcionFinal,
+                monto: monto,
+                bonifInfo: bonifInfo 
+            };
+
+            const batch = db.batch();
+            const movRef = db.collection("movimientos_proveedor").doc();
+            batch.set(movRef, nuevoMov);
+
+            // Actualizamos la BD (aunque el recalculador lo validará luego)
+            const provRef = db.collection("proveedores").doc(proveedorId);
+            batch.update(provRef, { 
+                saldoDeudor: firebase.firestore.FieldValue.increment(monto), 
+                ultimaActualizacion: serverTimestamp() 
+            });
+
+            try {
+                await batch.commit();
+                compraNumero.value = '';
+                compraMonto.value = '';
+                compraBonifInfo.value = '';
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        // PAGO
+        pagoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tipo = pagoTipoComp.value;
+            const numero = pagoNumero.value.trim() || 'S/N';
+            const medioPago = pagoDetalle.value.trim() || 'S/D';
+            const descripcionFinal = `${tipo} - ${numero} - ${medioPago}`;
+            const monto = parseFloat(pagoMonto.value);
+            const descuento = parseFloat(pagoDescuento.value) || 0;
+            const fechaManual = pagoFecha.value;
+
+            if (isNaN(monto) || monto <= 0 || !fechaManual) {
+                alert("Monto y Fecha obligatorios."); return;
+            }
+
+            const batch = db.batch();
+            let reduccionTotalDeuda = monto;
+
+            const pagoRef = db.collection("movimientos_proveedor").doc();
+            batch.set(pagoRef, {
+                proveedorId: proveedorId,
+                fecha: serverTimestamp(),
+                fechaManual: fechaManual,
+                tipo: 'pago',
+                descripcion: descripcionFinal,
+                monto: monto,
+                pagado: true 
+            });
+
+            if (descuento > 0) {
+                const bonifRef = db.collection("movimientos_proveedor").doc();
+                batch.set(bonifRef, {
+                    proveedorId: proveedorId,
+                    fecha: serverTimestamp(),
+                    fechaManual: fechaManual, 
+                    tipo: 'bonificacion',
+                    descripcion: `Desc. obtenido (${tipo} ${numero})`,
+                    monto: descuento
+                });
+                reduccionTotalDeuda += descuento;
+            }
+
+            const provRef = db.collection("proveedores").doc(proveedorId);
+            batch.update(provRef, { 
+                saldoDeudor: firebase.firestore.FieldValue.increment(-reduccionTotalDeuda), 
+                ultimaActualizacion: serverTimestamp() 
+            });
+
+            try {
+                await batch.commit();
+                pagoMonto.value = '';
+                pagoDescuento.value = '';
+                pagoNumero.value = '';
+                pagoDetalle.value = '';
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        // BORRAR
+        tablaMovimientos.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-borrar');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo;
+            const monto = parseFloat(btn.dataset.monto);
+
+            if(!confirm("¿Borrar este movimiento?")) return;
+
+            try {
+                const batch = db.batch();
+                const movRef = db.collection("movimientos_proveedor").doc(id);
+                batch.delete(movRef);
+
+                const provRef = db.collection("proveedores").doc(proveedorId);
+                // Si borro Compra, debo MENOS (-). Si borro Pago, debo MÁS (+).
+                let ajuste = (tipo === 'compra') ? -monto : monto;
+
+                batch.update(provRef, { saldoDeudor: firebase.firestore.FieldValue.increment(ajuste) });
+                await batch.commit();
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        // LIMPIAR
+        btnLimpiarCuenta.addEventListener('click', async () => {
+            if (!confirm(`¿Borrar TODO el historial de ${proveedorNombre}?`)) return;
+            try {
+                const qs = await db.collection("movimientos_proveedor").where("proveedorId", "==", proveedorId).get();
+                const batch = db.batch();
+                qs.forEach(doc => batch.delete(doc.ref));
+                
+                const provRef = db.collection("proveedores").doc(proveedorId);
+                batch.update(provRef, { saldoDeudor: 0 });
+                
+                await batch.commit();
+                alert("Cuenta reiniciada.");
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        // CALCULADORA
+        const calcMonto = document.getElementById('calc-monto');
+        const calcPorcentaje = document.getElementById('calc-porcentaje');
+        const resAhorroEl = document.getElementById('res-ahorro');
+        const resTotalEl = document.getElementById('res-total');
+        const btnUsarCalculo = document.getElementById('btn-usar-calculo');
+
+        const realizarCalculo = () => {
+            const monto = parseFloat(calcMonto.value) || 0;
+            const porc = parseFloat(calcPorcentaje.value) || 0;
+            const ahorro = monto * (porc / 100);
+            const total = monto - ahorro;
+            resAhorroEl.textContent = formatCurrency(ahorro);
+            resTotalEl.textContent = formatCurrency(total);
+            btnUsarCalculo.dataset.total = total.toFixed(2);
+            btnUsarCalculo.dataset.ahorro = ahorro.toFixed(2);
+        };
+
+        calcMonto.addEventListener('input', realizarCalculo);
+        calcPorcentaje.addEventListener('input', realizarCalculo);
+
+        btnUsarCalculo.addEventListener('click', () => {
+            const total = btnUsarCalculo.dataset.total;
+            const ahorro = btnUsarCalculo.dataset.ahorro;
+            if (!total) return;
+            document.getElementById('pago-monto').value = total;
+            document.getElementById('pago-descuento').value = ahorro;
+            const modalCalc = bootstrap.Modal.getInstance(document.getElementById('modalCalculadoraInterna'));
+            modalCalc.hide();
+            document.getElementById('pago-detalle').focus();
+        });
+
+        document.getElementById('modalCalculadoraInterna').addEventListener('show.bs.modal', () => {
+            calcMonto.value = '';
+            calcPorcentaje.value = '';
+            resAhorroEl.textContent = '$0.00';
+            resTotalEl.textContent = '$0.00';
+            setTimeout(() => calcMonto.focus(), 500); 
+        });
+
+    </script>
+</body>
+</html>

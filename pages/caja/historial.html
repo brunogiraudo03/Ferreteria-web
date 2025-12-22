@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Historial Movs. Caja Hoy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css"> 
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="caja_table.html">CAJA</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../clientes/clientes.html">CLIENTES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../proveedores/proveedores.html">PROVEEDORES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+             <h1 class="mb-0 text-danger display-6">Historial Movimientos de Caja</h1>
+
+             <a href="caja.html" class="btn btn-outline-secondary"> <i class="bi bi-arrow-left"></i> Volver a Caja Hoy </a>
+        </div>
+        <h3 id="historial-fecha" class="text-muted mb-4">Cargando fecha...</h3>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Detalle</th>
+                                <th class="text-end">Monto</th> 
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-historial">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tablaHistorial = document.getElementById('tabla-historial');
+            const tituloFecha = document.getElementById('historial-fecha');
+            
+            const formatCurrency = (value) => {
+                const number = Number(value);
+                return isNaN(number) ? '$ --.--' : number.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+            }
+
+            // Función para obtener texto y clase según el tipo guardado en logDiarioCaja
+            const getTipoInfo = (tipoLog) => {
+                let texto = tipoLog; 
+                let claseColor = '';
+                
+                if (tipoLog === 'Ingreso') {
+                    claseColor = 'text-success'; // Verde 
+                } else if (tipoLog === 'Egreso') {
+                    claseColor = 'text-danger'; // Rojo
+                } else if (tipoLog.includes('Corrección')) {
+                     claseColor = 'text-warning text-dark'; // Amarillo/Naranja para correcciones
+                     // Podríamos quitar "Corrección" del texto si quisiéramos
+                     // texto = tipoLog.replace('Corrección ', ''); 
+                }
+                
+                return { texto, claseColor };
+            }
+            
+            // Lee el log específico de caja
+            const log = JSON.parse(localStorage.getItem('logDiarioCaja')); 
+            const hoy = new Date().toISOString().split('T')[0]; 
+
+            // Validar log
+            if (!log || log.fecha !== hoy || !log.transacciones || log.transacciones.length === 0) {
+                const fechaHoyFormateada = new Date(hoy + 'T12:00:00Z').toLocaleDateString('es-AR', { timeZone: 'UTC' });
+                tituloFecha.textContent = 'Hoy: ' + fechaHoyFormateada;
+                tablaHistorial.innerHTML = '<tr><td colspan="4" class="text-center p-5">No hay movimientos registrados hoy.</td></tr>'; 
+                return;
+            }
+
+            // Mostrar fecha del log
+            const fechaLogFormateada = new Date(log.fecha + 'T12:00:00Z').toLocaleDateString('es-AR', { timeZone: 'UTC' });
+            tituloFecha.textContent = 'Fecha: ' + fechaLogFormateada;
+            tablaHistorial.innerHTML = ''; 
+
+            // Recorrer transacciones (del más nuevo al más viejo)
+            for (let i = log.transacciones.length - 1; i >= 0; i--) {
+                const tx = log.transacciones[i];
+                if (!tx || typeof tx.tipo === 'undefined') {
+                    console.warn("Transacción inválida encontrada en logDiarioCaja:", tx);
+                    continue; 
+                }
+
+                const tr = document.createElement('tr');
+                const { texto: tipoTexto, claseColor } = getTipoInfo(tx.tipo);
+                // El detalle ahora viene directamente del log (Ej: Efectivo, Transferencia, Egreso)
+                const detalleMostrado = tx.detalle || ''; 
+                 // Muestra el monto con signo +/- según sea corrección o no
+                 const montoConSigno = tx.tipo.includes('Corrección') ? `- ${formatCurrency(tx.monto)}` : formatCurrency(tx.monto);
+
+                tr.innerHTML = `
+                    <td>${tx.hora || '--:--:--'}</td>
+                    <td class="fw-bold ${claseColor}">${tipoTexto}</td>
+                    <td>${detalleMostrado}</td>
+                    <td class="fw-bold text-end ${claseColor}">${montoConSigno}</td> 
+                `;
+                tablaHistorial.appendChild(tr);
+            }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

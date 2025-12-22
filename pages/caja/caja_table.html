@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Cajas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css">
+    <style>
+        .fila-cliqueable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .fila-cliqueable:hover {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="caja_table.html">CAJA</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../clientes/clientes.html">CLIENTES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../proveedores/proveedores.html">PROVEEDORES</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0 text-danger display-6">Historial de Cajas</h1>
+            <a href="caja.html" class="btn btn-danger btn-lg">
+                <i class="bi bi-calculator me-2"></i>Ir a la Caja del Día
+            </a>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="search-fecha" class="form-label fw-bold">Buscar por Fecha:</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="search-fecha">
+                            <button class="btn btn-outline-secondary" id="btn-limpiar-filtro" title="Limpiar filtro"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4"></div>
+
+                    <div class="col-md-4">
+                         <label for="input-crear-fecha" class="form-label fw-bold text-muted small">Crear/Editar Caja Pasada:</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="input-crear-fecha">
+                            <button class="btn btn-success" id="btn-crear-caja" title="Ir a esta fecha"><i class="bi bi-plus-lg"></i> Abrir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Efectivo</th>
+                                <th>Transferencia</th>
+                                <th>Cheque</th>
+                                <th class="text-success">Total Ingreso</th>
+                                <th class="text-danger">Total Egreso</th>
+                                <th class="text-primary">Balance</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cajas">
+                            <tr><td colspan="8" class="text-center p-5">Cargando datos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="container-ver-todos" class="text-center mt-3" style="display: none;">
+                    <div class="d-grid gap-2 col-lg-6 mx-auto">
+                        <button class="btn btn-light text-secondary border shadow-sm" id="btn-ver-todos">
+                            <i class="bi bi-arrow-down-circle me-2"></i> Mostrar todo el historial antiguo
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Mostrando las últimas 30 cajas para ahorrar datos.</small>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                console.log("Persistencia:", err.code);
+        });
+
+        const db = firebase.firestore();
+
+        const tablaCajas = document.getElementById('tabla-cajas');
+        const searchFecha = document.getElementById('search-fecha');
+        const btnLimpiarFiltro = document.getElementById('btn-limpiar-filtro');
+        const btnCrearCaja = document.getElementById('btn-crear-caja');
+        const inputCrearFecha = document.getElementById('input-crear-fecha');
+        
+        const btnVerTodos = document.getElementById('btn-ver-todos');
+        const containerVerTodos = document.getElementById('container-ver-todos');
+        
+        let cajasCargadas = [];
+        let unsubscribe = null; 
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        
+        const formatDateForDisplay = (dateString) => {
+            if (!dateString) return '--/--/----'; 
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        const actualizarVista = () => {
+            const filtroFecha = searchFecha.value;
+            let cajasAMostrar = cajasCargadas;
+            if (filtroFecha) {
+                cajasAMostrar = cajasCargadas.filter(caja => (caja.fecha || caja.id) === filtroFecha);
+            }
+            renderCajas(cajasAMostrar);
+        };
+
+        const renderCajas = (cajas) => {
+            tablaCajas.innerHTML = '';
+            if (cajas.length === 0) {
+                 tablaCajas.innerHTML = '<tr><td colspan="8" class="text-center p-5">No hay cajas registradas.</td></tr>';
+                 return;
+            }
+            cajas.forEach(caja => {
+                const totalIngreso = (caja.efectivo || 0) + (caja.transferencia || 0) + (caja.cheque || 0);
+                const egreso = caja.egreso || 0;
+                const balance = totalIngreso - egreso;
+                const fechaMostrar = caja.fecha || caja.id;
+
+                const tr = document.createElement('tr');
+                tr.className = 'fila-cliqueable'; 
+
+                tr.innerHTML = `
+                    <td class="fw-bold">${formatDateForDisplay(fechaMostrar)}</td>
+                    <td>${formatCurrency(caja.efectivo)}</td>
+                    <td>${formatCurrency(caja.transferencia)}</td>
+                    <td>${formatCurrency(caja.cheque)}</td>
+                    <td class="text-success fw-bold">${formatCurrency(totalIngreso)}</td>
+                    <td class="text-danger fw-bold">${formatCurrency(egreso)}</td>
+                    <td class="fw-bold ${balance >= 0 ? 'text-primary' : 'text-danger'}">${formatCurrency(balance)}</td>
+                    <td>
+                        <a href="caja.html?id=${caja.id}" class="btn btn-sm btn-warning btn-editar" title="Editar/Ver Caja">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <button class="btn btn-sm btn-danger btn-borrar" data-id="${caja.id}" title="Borrar Caja">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tr.addEventListener('click', (e) => {
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+                    window.location.href = `caja.html?id=${caja.id}`;
+                });
+
+                tablaCajas.appendChild(tr);
+
+                tr.querySelector('.btn-borrar').addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    handleDelete(e.currentTarget.dataset.id);
+                });
+            });
+        };
+
+        const cargarCajas = (mostrarTodo = false) => {
+            if (unsubscribe) { unsubscribe(); }
+
+            // Usamos ordenamiento por ID descendente en la consulta a la base de datos
+            let query = db.collection("cajas").orderBy(firebase.firestore.FieldPath.documentId(), "desc");
+
+            if (!mostrarTodo) { query = query.limit(30); }
+
+            unsubscribe = query.onSnapshot((snapshot) => {
+                // 1. Convertimos los datos
+                cajasCargadas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // 2. ORDENAMIENTO FORZOSO EN JAVASCRIPT
+                // Esto garantiza que se vean de la más reciente a la más vieja, 
+                // corrigiendo cualquier desorden que venga de la base de datos o el caché.
+                cajasCargadas.sort((a, b) => {
+                    const idA = a.fecha || a.id;
+                    const idB = b.fecha || b.id;
+                    // Comparar strings ISO (YYYY-MM-DD) funciona perfecto
+                    if (idA < idB) return 1; // Si A es menor que B, A va después (Descendente)
+                    if (idA > idB) return -1; // Si A es mayor, A va antes
+                    return 0;
+                });
+
+                // 3. Mostramos
+                actualizarVista();
+
+                if (mostrarTodo) {
+                    containerVerTodos.style.display = 'none';
+                } else {
+                    if (snapshot.size < 30) {
+                        containerVerTodos.style.display = 'none';
+                    } else {
+                        containerVerTodos.style.display = 'block';
+                    }
+                }
+
+            }, (error) => {
+                console.error("Error al leer datos de cajas: ", error);
+                
+                let mensaje = "Error desconocido.";
+                if (error.code === 'failed-precondition') {
+                    mensaje = "Falta crear un índice en Firebase. Revisa la consola (F12) y dale clic al link.";
+                } else if (error.code === 'unavailable') {
+                    mensaje = "Sin conexión a internet.";
+                } else {
+                    mensaje = error.message;
+                }
+                tablaCajas.innerHTML = `<tr><td colspan="8" class="text-center p-5 text-danger"><b>Error:</b> ${mensaje}</td></tr>`;
+            });
+        };
+
+        cargarCajas(false);
+
+        btnVerTodos.addEventListener('click', () => {
+            btnVerTodos.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Cargando historial completo...';
+            cargarCajas(true);
+        });
+
+        searchFecha.addEventListener('input', actualizarVista);
+        btnLimpiarFiltro.addEventListener('click', () => {
+            searchFecha.value = '';
+            actualizarVista();
+        });
+
+        btnCrearCaja.addEventListener('click', () => {
+            const fechaSeleccionada = inputCrearFecha.value;
+            if (fechaSeleccionada) {
+                window.location.href = `caja.html?id=${fechaSeleccionada}`;
+            } else {
+                alert("Por favor, seleccione una fecha primero.");
+            }
+        });
+
+        const handleDelete = (id) => {
+            if (confirm('¿Estás seguro de que quieres borrar el registro de esta caja? Esta acción no se puede deshacer.')) {
+                db.collection("cajas").doc(id).delete()
+                    .catch(error => {
+                        console.error("Error al borrar la caja: ", error);
+                        alert("No se pudo borrar la caja.");
+                    });
+            }
+        };
+    </script>
+</body>
+</html>

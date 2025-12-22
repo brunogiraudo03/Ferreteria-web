@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Cheques</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="home.html">HOME</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="caja/caja_table.html">CAJA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="clientes/clientes.html">CLIENTES</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link active" href="cheques.html">CHEQUES</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="proveedores/proveedores.html">PROVEEDORES</a> 
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="presupuesto.html">PRESUPUESTO</a> 
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0 text-danger display-6">Gestión de Cheques</h1>
+            <button class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#chequeModal" id="btn-agregar-cheque">
+                <i class="bi bi-plus-circle me-2"></i>Agregar Cheque Recibido
+            </button>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha Recep.</th> <th>Fecha Vto.</th>
+                                <th>Monto</th>
+                                <th>Banco</th>
+                                <th>Número</th>
+                                <th>Librador</th>
+                                <th>Estado</th>
+                                <th>Entregado A</th>
+                                <th>Acciones</th> 
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cheques">
+                            <tr><td colspan="9" class="text-center p-5">Cargando cheques...</td></tr> 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="chequeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalChequeTitle">Agregar Cheque Recibido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cheque-form">
+                        <input type="hidden" id="cheque-editando-id">
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="fecha-recepcion" class="form-label">Fecha Recepción</label>
+                                <input type="date" class="form-control" id="fecha-recepcion" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fecha-vencimiento" class="form-label">Fecha Vencimiento</label>
+                                <input type="date" class="form-control" id="fecha-vencimiento" required>
+                            </div>
+                             <div class="col-md-6">
+                                <label for="monto-cheque" class="form-label">Monto</label>
+                                <div class="input-group">
+                                     <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="monto-cheque" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="banco-cheque" class="form-label">Banco</label>
+                                <input type="text" class="form-control" id="banco-cheque" required>
+                            </div>
+                             <div class="col-md-6">
+                                <label for="numero-cheque" class="form-label">Número</label>
+                                <input type="text" class="form-control" id="numero-cheque" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="librador-cheque" class="form-label">Librador (Quién lo entrega)</label>
+                                <input type="text" class="form-control" id="librador-cheque" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="estado-cheque" class="form-label">Estado</label>
+                                <select class="form-select" id="estado-cheque">
+                                    <option value="En Cartera">En Cartera</option>
+                                    <option value="Depositado">Depositado</option>
+                                    <option value="Entregado">Entregado</option>
+                                    <option value="Rechazado">Rechazado</option>
+                                </select>
+                            </div>
+                             <div class="col-md-6" id="entregado-a-div" style="display: none;"> 
+                                <label for="entregado-a-cheque" class="form-label">Entregado A</label>
+                                <input type="text" class="form-control" id="entregado-a-cheque">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                 <div class="modal-footer d-flex justify-content-between">
+                     <button type="button" class="btn btn-secondary" id="btn-cancelar-edicion-cheque" style="display: none;">Cancelar Edición</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-danger" id="btn-guardar-cheque">Guardar Cheque</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }) 
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log("Error de persistencia (múltiples pestañas).");
+                } else if (err.code == 'unimplemented') {
+                    console.log("El navegador no soporta persistencia.");
+                }
+        });
+            
+        const db = firebase.firestore();
+
+        const tablaCheques = document.getElementById('tabla-cheques');
+        const btnGuardarCheque = document.getElementById('btn-guardar-cheque');
+        const chequeForm = document.getElementById('cheque-form');
+        const chequeModal = new bootstrap.Modal(document.getElementById('chequeModal'));
+        const modalChequeTitle = document.getElementById('modalChequeTitle');
+        const fechaRecepcionInput = document.getElementById('fecha-recepcion');
+        const fechaVencimientoInput = document.getElementById('fecha-vencimiento');
+        const montoChequeInput = document.getElementById('monto-cheque');
+        const bancoChequeInput = document.getElementById('banco-cheque');
+        const numeroChequeInput = document.getElementById('numero-cheque');
+        const libradorChequeInput = document.getElementById('librador-cheque');
+        const estadoChequeSelect = document.getElementById('estado-cheque');
+        const entregadoADiv = document.getElementById('entregado-a-div');
+        const entregadoAChequeInput = document.getElementById('entregado-a-cheque');
+        const chequeEditandoIdInput = document.getElementById('cheque-editando-id');
+        const btnCancelarEdicionCheque = document.getElementById('btn-cancelar-edicion-cheque');
+
+        let chequesCargados = [];
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        const formatDateInput = (dateString) => {
+             if (!dateString) return 'N/A';
+             const [year, month, day] = dateString.split('-');
+             return `${day}/${month}/${year}`;
+        }
+
+        const getEstadoBadgeClass = (estado) => {
+            switch (estado) {
+                case 'En Cartera': return 'bg-en-cartera';
+                case 'Depositado': return 'bg-depositado text-white';
+                case 'Entregado': return 'bg-entregado text-white';
+                case 'Rechazado': return 'bg-rechazado text-white';
+                default: return 'bg-secondary text-white';
+            }
+        };
+
+        const renderCheques = (cheques) => {
+            tablaCheques.innerHTML = '';
+            if (cheques.length === 0) {
+                 tablaCheques.innerHTML = '<tr><td colspan="9" class="text-center p-5">No hay cheques registrados.</td></tr>';
+                 return;
+            }
+            cheques.forEach(cheque => {
+                const tr = document.createElement('tr');
+                const estado = cheque.estado || 'En Cartera';
+                const badgeClass = getEstadoBadgeClass(estado);
+                
+                tr.innerHTML = `
+                    <td class="text-muted fw-bold">${formatDateInput(cheque.fechaRecepcion)}</td> <td class="fw-bold">${formatDateInput(cheque.fechaVencimiento)}</td>
+                    <td>${formatCurrency(cheque.monto)}</td>
+                    <td>${cheque.banco}</td>
+                    <td>${cheque.numero}</td>
+                    <td>${cheque.librador}</td>
+                    <td><span class="badge ${badgeClass}">${estado}</span></td>
+                    <td>${cheque.entregadoA || ''}</td>
+                    <td>
+                         <button class="btn btn-sm btn-warning btn-modificar" data-id="${cheque.id}"><i class="bi bi-pencil-fill"></i></button>
+                         <button class="btn btn-sm btn-danger btn-borrar" data-id="${cheque.id}"><i class="bi bi-trash-fill"></i></button>
+                    </td>
+                `;
+                tablaCheques.appendChild(tr);
+
+                tr.querySelector('.btn-modificar').addEventListener('click', (e) => {
+                    handleLoadEditForm(e.currentTarget.dataset.id);
+                });
+                tr.querySelector('.btn-borrar').addEventListener('click', (e) => {
+                    handleDeleteCheque(e.currentTarget.dataset.id);
+                });
+            });
+        };
+
+        // --- MODIFICACIÓN AQUÍ: Se eliminó el orderBy de la consulta y se ordena por JS ---
+        // Esto es para asegurar que se ordene por RECEPCIÓN sin necesidad de crear índices compuestos complejos en Firebase si los datos son mixtos.
+        db.collection("cheques").onSnapshot((snapshot) => {
+            chequesCargados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // ORDENAR POR FECHA DE RECEPCIÓN (Más nuevos primero)
+            chequesCargados.sort((a, b) => {
+                if (a.fechaRecepcion > b.fechaRecepcion) return -1;
+                if (a.fechaRecepcion < b.fechaRecepcion) return 1;
+                return 0;
+            });
+
+            renderCheques(chequesCargados);
+        }, (error) => {
+            console.error("Error al leer cheques: ", error);
+             tablaCheques.innerHTML = `<tr><td colspan="9" class="text-center p-5 text-danger"><b>Error al cargar cheques.</b> Revise la consola (F12).</td></tr>`;
+        });
+
+        const resetChequeForm = () => {
+            chequeForm.reset();
+            chequeEditandoIdInput.value = '';
+            modalChequeTitle.textContent = 'Agregar Cheque Recibido';
+            btnGuardarCheque.textContent = 'Guardar Cheque';
+            btnGuardarCheque.classList.remove('btn-warning');
+            btnGuardarCheque.classList.add('btn-danger');
+            btnCancelarEdicionCheque.style.display = 'none';
+            entregadoADiv.style.display = 'none';
+            fechaRecepcionInput.valueAsDate = new Date(); 
+        };
+        
+        document.getElementById('btn-agregar-cheque').addEventListener('click', resetChequeForm);
+        btnCancelarEdicionCheque.addEventListener('click', resetChequeForm);
+        
+        estadoChequeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Entregado') {
+                entregadoADiv.style.display = 'block';
+            } else {
+                entregadoADiv.style.display = 'none';
+                entregadoAChequeInput.value = '';
+            }
+        });
+
+        btnGuardarCheque.addEventListener('click', async () => {
+            if (!chequeForm.checkValidity()) {
+                 alert('Por favor, complete todos los campos requeridos.');
+                 chequeForm.reportValidity();
+                 return;
+            }
+            
+            const idEditando = chequeEditandoIdInput.value;
+            const estadoSeleccionado = estadoChequeSelect.value;
+            const entregadoA = estadoSeleccionado === 'Entregado' ? entregadoAChequeInput.value : '';
+
+            const data = {
+                fechaRecepcion: fechaRecepcionInput.value,
+                fechaVencimiento: fechaVencimientoInput.value,
+                monto: parseFloat(montoChequeInput.value),
+                banco: bancoChequeInput.value,
+                numero: numeroChequeInput.value,
+                librador: libradorChequeInput.value,
+                estado: estadoSeleccionado,
+                entregadoA: entregadoA,
+                ultimaModificacion: firebase.firestore.FieldValue.serverTimestamp() 
+            };
+            
+            if (!idEditando) {
+                data.creadoEn = firebase.firestore.FieldValue.serverTimestamp();
+            }
+
+            try {
+                if (idEditando) {
+                    await db.collection("cheques").doc(idEditando).update(data);
+                } else { 
+                    await db.collection("cheques").add(data);
+                }
+                chequeModal.hide();
+                resetChequeForm(); 
+            } catch (error) {
+                console.error("Error al guardar cheque: ", error);
+                alert("Error al guardar: " + error.message);
+            }
+        });
+
+        const handleLoadEditForm = (id) => {
+            const cheque = chequesCargados.find(c => c.id === id);
+            if (!cheque) return;
+
+            chequeEditandoIdInput.value = id;
+            fechaRecepcionInput.value = cheque.fechaRecepcion;
+            fechaVencimientoInput.value = cheque.fechaVencimiento;
+            montoChequeInput.value = cheque.monto;
+            bancoChequeInput.value = cheque.banco;
+            numeroChequeInput.value = cheque.numero;
+            libradorChequeInput.value = cheque.librador;
+            estadoChequeSelect.value = cheque.estado || 'En Cartera';
+            entregadoAChequeInput.value = cheque.entregadoA || '';
+            
+            entregadoADiv.style.display = (estadoChequeSelect.value === 'Entregado') ? 'block' : 'none';
+
+            modalChequeTitle.textContent = 'Modificar Cheque';
+            btnGuardarCheque.textContent = 'Actualizar Cheque';
+            btnGuardarCheque.classList.remove('btn-danger');
+            btnGuardarCheque.classList.add('btn-warning');
+            btnCancelarEdicionCheque.style.display = 'block';
+            chequeModal.show();
+        };
+        
+        const handleDeleteCheque = async (id) => {
+             const cheque = chequesCargados.find(c => c.id === id);
+             if (!cheque) return;
+
+             if (confirm(`¿Estás seguro de que quieres borrar el cheque N° ${cheque.numero} de ${cheque.librador}?`)) {
+                try {
+                    await db.collection("cheques").doc(id).delete();
+                } catch (error) {
+                    console.error("Error al borrar cheque: ", error);
+                    alert("Error al borrar: " + error.message);
+                }
+            }
+        };
+
+    </script>
+</body>
+</html>

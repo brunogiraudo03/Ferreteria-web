@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Caja</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/style.css"> 
+    <style>
+        .total-card { border-left-width: 5px; }
+        .border-success { border-left-color: #198754 !important; }
+        .border-info { border-left-color: #0dcaf0 !important; }
+        .border-warning { border-left-color: #ffc107 !important; }
+        .border-danger { border-left-color: #dc3545 !important; }
+        .balance-positivo { color: #198754; }
+        .balance-negativo { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-danger" href="../home.html">⚙️ Ferretería  </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                     <li class="nav-item"><a class="nav-link" href="../home.html">HOME</a></li>
+                     <li class="nav-item"><a class="nav-link active" href="caja_table.html">CAJA</a></li>
+                     <li class="nav-item"><a class="nav-link" href="../clientes/clientes.html">CLIENTES</a></li>
+                     <li class="nav-item"><a class="nav-link" href="../cheques.html">CHEQUES</a></li>
+                     <li class="nav-item"><a class="nav-link" href="../proveedores/proveedores.html">PROVEEDORES</a></li>
+                     <li class="nav-item"><a class="nav-link" href="../presupuesto.html">PRESUPUESTO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h1 id="titulo-caja" class="mb-0 h3">Cargando...</h1>
+
+                        <a href="historial.html" class="btn btn-sm btn-info" id="btn-ver-historial-dia">
+                            <i class="bi bi-clock-history"></i> Ver Movs. Hoy
+                        </a>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card shadow-sm total-card border-success">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-success">Efectivo</h6>
+                                        <p id="total-efectivo" class="card-text fs-4 fw-bold mb-0">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card shadow-sm total-card border-info">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-info">Transferencia</h6>
+                                        <p id="total-transferencia" class="card-text fs-4 fw-bold mb-0">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card shadow-sm total-card border-warning">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-warning">Cheque</h6>
+                                        <p id="total-cheque" class="card-text fs-4 fw-bold mb-0">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card shadow-sm total-card border-danger">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-danger">Egresos</h6>
+                                        <p id="total-egreso" class="card-text fs-4 fw-bold mb-0">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center bg-light p-3 rounded mb-4 shadow-sm">
+                            <h2 class="h5 text-muted mb-1">BALANCE</h2>
+                            <p id="balance-caja" class="display-5 fw-bold">$0.00</p>
+                        </div>
+
+                        <div class="row g-3">
+                           <div class="col-md-6">
+                                <form id="form-efectivo" class="card h-100" data-field="efectivo">
+                                    <div class="card-body">
+                                        <label for="monto-efectivo" class="form-label">Añadir o Restar Efectivo</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-danger btn-restar" data-field="efectivo"><i class="bi bi-dash-lg"></i></button>
+                                            <input type="number" class="form-control text-center" id="monto-efectivo" step="any" placeholder="Monto..." required>
+                                            <button type="button" class="btn btn-outline-success btn-sumar" data-field="efectivo"><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div class="form-text text-center text-muted small">Enter para sumar</div>
+                                    </div>
+                                </form>
+                            </div>
+                             <div class="col-md-6">
+                                <form id="form-transferencia" class="card h-100" data-field="transferencia">
+                                    <div class="card-body">
+                                        <label for="monto-transferencia" class="form-label">Añadir o Restar Transferencia</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-danger btn-restar" data-field="transferencia"><i class="bi bi-dash-lg"></i></button>
+                                            <input type="number" class="form-control text-center" id="monto-transferencia" step="any" placeholder="Monto..." required>
+                                            <button type="button" class="btn btn-outline-info btn-sumar" data-field="transferencia"><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div class="form-text text-center text-muted small">Enter para sumar</div>
+                                    </div>
+                                </form>
+                            </div>
+                             <div class="col-md-6">
+                                <form id="form-cheque" class="card h-100" data-field="cheque">
+                                    <div class="card-body">
+                                        <label for="monto-cheque" class="form-label">Añadir o Restar Cheque</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-danger btn-restar" data-field="cheque"><i class="bi bi-dash-lg"></i></button>
+                                            <input type="number" class="form-control text-center" id="monto-cheque" step="any" placeholder="Monto..." required>
+                                            <button type="button" class="btn btn-outline-warning btn-sumar" data-field="cheque"><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div class="form-text text-center text-muted small">Enter para sumar</div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <form id="form-egreso" class="card h-100" data-field="egreso">
+                                    <div class="card-body">
+                                        <label for="monto-egreso" class="form-label">Añadir o Restar Egreso</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-danger btn-restar" data-field="egreso"><i class="bi bi-dash-lg"></i></button>
+                                            <input type="number" class="form-control text-center" id="monto-egreso" step="any" placeholder="Monto..." required>
+                                            <button type="button" class="btn btn-outline-secondary btn-sumar" data-field="egreso"><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div class="form-text text-center text-muted small">Enter para sumar</div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxZXeMBFCnojOyrklKmPs-drk276eRDcs",
+        authDomain: "ferreteria-giraudo-demo.firebaseapp.com",
+        projectId: "ferreteria-giraudo-demo",
+        storageBucket: "ferreteria-giraudo-demo.firebasestorage.app",
+        messagingSenderId: "868547712282",
+        appId: "1:868547712282:web:3318bfd50a61212e6648a3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // --- CORRECCIÓN 1: Activar synchronizeTabs ---
+        // Esto permite que la Caja guarde datos offline aunque tengas Clientes abierta en otra pestaña
+        firebase.firestore().enablePersistence({ synchronizeTabs: true })
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log("Error persistencia (múltiples pestañas sin sincro).");
+                } else if (err.code == 'unimplemented') {
+                    console.log("El navegador no soporta persistencia.");
+                }
+            });
+            
+        const db = firebase.firestore();
+        const increment = firebase.firestore.FieldValue.increment;
+
+        const tituloCajaEl = document.getElementById('titulo-caja');
+        const totalEfectivoEl = document.getElementById('total-efectivo');
+        const totalTransferenciaEl = document.getElementById('total-transferencia');
+        const totalChequeEl = document.getElementById('total-cheque');
+        const totalEgresoEl = document.getElementById('total-egreso');
+        const balanceCajaEl = document.getElementById('balance-caja');
+
+        let cajaId = null;
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
+        
+        // --- CORRECCIÓN 2: Generación de Fecha Segura ---
+        // Reemplazamos el getTimezoneOffset por algo más estable
+        const formatDateForId = (dateInput) => {
+            const d = new Date(dateInput);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const formatDateForTitle = (dateString) => {
+            const [year, month, day] = dateString.split('-');
+            const date = new Date(Date.UTC(year, month - 1, day)); 
+            return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
+
+            if (idParam) {
+                cajaId = idParam;
+            } else {
+                cajaId = formatDateForId(new Date());
+            }
+            
+            tituloCajaEl.textContent = `Caja del ${formatDateForTitle(cajaId)}`;
+
+            const cajaRef = db.collection("cajas").doc(cajaId);
+
+            cajaRef.onSnapshot((doc) => {
+                let efectivo = 0, transferencia = 0, cheque = 0, egreso = 0;
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    efectivo = data.efectivo || 0;
+                    transferencia = data.transferencia || 0;
+                    cheque = data.cheque || 0;
+                    egreso = data.egreso || 0;
+                }
+                
+                totalEfectivoEl.textContent = formatCurrency(efectivo);
+                totalTransferenciaEl.textContent = formatCurrency(transferencia);
+                totalChequeEl.textContent = formatCurrency(cheque);
+                totalEgresoEl.textContent = formatCurrency(egreso);
+
+                const balance = efectivo + transferencia + cheque - egreso;
+                balanceCajaEl.textContent = formatCurrency(balance);
+                balanceCajaEl.className = 'display-5 fw-bold ' + (balance >= 0 ? 'balance-positivo' : 'balance-negativo');
+
+            }, (error) => {
+                console.error("Error al observar la caja: ", error);
+            });
+            
+            // Inicializar Log Local (Solo visual)
+            const hoy = new Date().toISOString().split('T')[0];
+            let log = JSON.parse(localStorage.getItem('logDiarioCaja'));
+            // Pequeña corrección: aseguramos que el log sea del día correcto (usando la función segura también)
+            const fechaHoySegura = formatDateForId(new Date());
+            
+            if (!log || log.fecha !== fechaHoySegura) {
+                log = { fecha: fechaHoySegura, transacciones: [] };
+                localStorage.setItem('logDiarioCaja', JSON.stringify(log));
+            }
+        });
+
+        const updateMovement = async (field, amount) => {
+            if (isNaN(amount)) return;
+
+            // 1. PREPARAMOS EL DATO DE FIREBASE (Pero todavía no lo enviamos)
+            const cajaRef = db.collection("cajas").doc(cajaId);
+            const data = {
+                fecha: cajaId,
+                ultimaModificacion: firebase.firestore.FieldValue.serverTimestamp(),
+                [field]: increment(amount)
+            };
+            
+            // ---------------------------------------------------------
+            // 2. GUARDAMOS EN HISTORIAL LOCAL (PRIMERO)
+            // ---------------------------------------------------------
+            // Al poner esto ANTES del await, el historial se actualiza al instante.
+            // Así solucionamos el bug de que "el primero no aparece".
+            try {
+                const hoyId = formatDateForId(new Date());
+                if (cajaId === hoyId) {
+                    const log = JSON.parse(localStorage.getItem('logDiarioCaja')) || { fecha: hoyId, transacciones: [] };
+                    
+                    let tipoTexto = (field === 'egreso') ? 'Egreso' : 'Ingreso';
+                    let detalleTexto = field.charAt(0).toUpperCase() + field.slice(1); 
+                    if (amount < 0) tipoTexto = 'Corrección ' + tipoTexto;
+
+                    log.transacciones.push({
+                        hora: new Date().toLocaleTimeString('es-AR'),
+                        tipo: tipoTexto,
+                        detalle: detalleTexto,
+                        monto: Math.abs(amount)
+                    });
+                    localStorage.setItem('logDiarioCaja', JSON.stringify(log));
+                }
+            } catch (e) {
+                console.error("Error guardando historial local", e);
+            }
+
+            // ---------------------------------------------------------
+            // 3. AHORA SÍ, ENVIAMOS A FIREBASE (CON AWAIT)
+            // ---------------------------------------------------------
+            try {
+                // Mantenemos el await como te gusta, para asegurar que llegue a la nube
+                await cajaRef.set(data, { merge: true });
+                
+            } catch (error) {
+                console.error(`Error al actualizar ${field}: `, error);
+                alert(`Error al registrar en la nube: ${error.message}`);
+                // Opcional: Podrías borrar el log local si falla la nube, 
+                // pero para tu viejo es mejor que quede registrado que él lo intentó.
+            }
+        };
+
+        document.querySelectorAll('.btn-sumar, .btn-restar').forEach(button => {
+            button.addEventListener('click', () => {
+                const field = button.dataset.field;
+                const input = document.getElementById(`monto-${field}`);
+                let amount = parseFloat(input.value);
+
+                if (isNaN(amount) || amount <= 0) {
+                     alert("Por favor, ingrese un monto válido.");
+                     return;
+                }
+
+                if (button.classList.contains('btn-restar')) {
+                    amount = -amount;
+                }
+
+                updateMovement(field, amount);
+                input.value = ''; 
+                input.focus(); 
+            });
+        });
+        
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const field = form.getAttribute('id').replace('form-', '');
+                const input = document.getElementById(`monto-${field}`);
+                let amount = parseFloat(input.value);
+                 if (isNaN(amount) || amount <= 0) {
+                     alert("Por favor, ingrese un monto válido.");
+                     return;
+                }
+                updateMovement(field, amount);
+                input.value = '';
+                input.focus();
+            });
+        });
+
+    </script>
+</body>
+</html>

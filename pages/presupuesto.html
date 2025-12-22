@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Ferretería   - Crear Presupuesto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../static/style.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        #presupuesto-container { max-width: 800px; margin: auto; }
+        #presupuesto-preview { border: 1px solid #dee2e6; padding: 2.5rem; background-color: white; }
+
+        @page {
+            size: A4;
+            margin: 1cm; /* Reduje un poco el margen para asegurar que entre bien */
+        }
+
+        @media print {
+            /* CORRECCIÓN PRINCIPAL AQUÍ */
+            body, html { 
+                width: 100%; 
+                height: auto !important; /* Cambiado de 100% a auto */
+                margin: 0 !important; 
+                padding: 0 !important;
+                background: #fff !important; 
+                font-size: 10pt; 
+            }
+
+            .no-print { display: none !important; }
+            #presupuesto-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important;}
+            
+            #presupuesto-preview { 
+                position: relative; /* Cambiado a relative para fluidez natural */
+                width: 100%; 
+                border: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+            }
+            
+            .printable-area, .printable-area * { visibility: visible; }
+            
+            /* Ajustes de impresión */
+            #presupuesto-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 1rem; border-bottom: 2px solid #333; width: 100%; }
+            #header-logo { flex: 0 0 150px; text-align: left; }
+            #header-logo img { max-width: 100%; max-height: 70px; }
+            #header-info { flex-grow: 1; text-align: center; padding: 0 1rem; }
+            #header-details { flex: 0 0 150px; text-align: right; }
+            #header-info h2 { font-size: 1.2rem; font-weight: bold; margin:0;}
+            #header-info p { font-size: 0.9rem; margin:0; }
+            .text-danger { color: #000 !important; }
+            .table { font-size: 9pt; }
+            .table thead th { background-color: #e9ecef !important; color: #000 !important; font-weight: bold; }
+            .table-bordered, .table-bordered th, .table-bordered td { border: 1px solid #dee2e6 !important; }
+            tr { page-break-inside: avoid; }
+            
+            /* Ajuste del footer para que no fuerce otra página */
+            #presupuesto-footer { 
+                position: fixed; 
+                bottom: 0; 
+                left: 0; 
+                width: 100%;
+                text-align: center; 
+                font-size: 8pt; 
+                color: #6c757d; 
+                border-top: 1px solid #dee2e6; 
+                padding-top: 0.5rem; 
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm no-print">
+         <div class="container">
+            <a class="navbar-brand text-danger" href="home.html">⚙️ Ferretería  </a>
+             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                 <ul class="navbar-nav ms-auto">
+                     <li class="nav-item"><a class="nav-link" href="home.html">HOME</a></li>
+                     <li class="nav-item"><a class="nav-link" href="caja/caja_table.html">CAJA</a></li>
+                     <li class="nav-item"><a class="nav-link" href="clientes/clientes.html">CLIENTES</a></li>
+                     <li class="nav-item"><a class="nav-link" href="cheques.html">CHEQUES</a></li>
+                     <li class="nav-item"><a class="nav-link" href="proveedores/proveedores.html">PROVEEDORES</a></li>
+                     <li class="nav-item"><a class="nav-link active" href="presupuesto.html">PRESUPUESTO</a></li> 
+                 </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="presupuesto-container">
+        <main class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                <h1 class="mb-0 text-danger display-6">Crear Presupuesto</h1>
+                <button class="btn btn-primary btn-lg" id="btn-imprimir"><i class="bi bi-printer-fill me-2"></i>Imprimir / Guardar PDF</button>
+            </div>
+
+            <div class="card shadow-sm mb-4 no-print">
+                <div class="card-body">
+                    <h5 class="card-title">Agregar Item</h5>
+                    <form id="item-form" class="row g-3 align-items-end">
+                        <div class="col-md-2"><label for="item-cantidad" class="form-label">Cant.</label><input type="number" class="form-control" id="item-cantidad" value="1" step="any" required></div>
+                        <div class="col-md-5">
+                            <label for="item-descripcion" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="item-descripcion" required spellcheck="true" placeholder="Ej: Tornillo autoperforante...">
+                        </div>
+                        <div class="col-md-3"><label for="item-precio" class="form-label">Precio Unit.</label><div class="input-group"><span class="input-group-text">$</span><input type="number" class="form-control" id="item-precio" step="any" required></div></div>
+                        <div class="col-md-2"><button type="submit" class="btn btn-success w-100">Agregar</button></div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="presupuesto-preview" class="shadow-sm bg-white printable-area">
+                <div id="presupuesto-header">
+                    <div id="header-logo"><img src="../static/images/logo.jpg" alt="Logo Ferretería  "></div>
+                    <div id="header-info">
+                        <h2 class="text-danger">Ferretería  </h2>
+                        <p>Direccion</p>
+                        <p>Tel:</p>
+                    </div>
+                    <div id="header-details">
+                        <h3 class="mb-1">PRESUPUESTO</h3>
+                        <p class="mb-0"><strong>N°:</strong> <span id="presupuesto-numero">0001</span></p>
+                        <p class="mb-0"><strong>Fecha:</strong> <span id="presupuesto-fecha">--/--/----</span></p>
+                    </div>
+                </div>
+
+                <div id="cliente-container" class="mb-4">
+                    <strong contenteditable="true" id="cliente-nombre" placeholder="Click para ingresar nombre del cliente" class="fs-5 border-bottom pb-1 d-block">Cliente: </strong>
+                </div>
+
+                <table class="table table-bordered mb-4">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%;">Cant.</th>
+                            <th>Descripción</th>
+                            <th style="width: 20%;" class="text-end">P/Unit.</th>
+                            <th style="width: 20%;" class="text-end">Total</th>
+                            <th class="text-center no-print" style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-items">
+                         <tr><td colspan="5" class="text-center text-muted p-3">Agregue items usando el formulario.</td></tr>
+                    </tbody>
+                    <tfoot class="table-group-divider fw-bold">
+                        <tr>
+                            <td colspan="3" class="text-end border-0">SUBTOTAL:</td>
+                            <td id="presupuesto-subtotal" class="text-end">$0.00</td>
+                            <td class="no-print border-0"></td> 
+                        </tr>
+                        <tr class="fs-5 table-light">
+                            <td colspan="3" class="text-end border-0">TOTAL:</td>
+                            <td id="presupuesto-total" class="text-end">$0.00</td>
+                             <td class="no-print border-0"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                 <div id="presupuesto-footer" style="display:none;" class="printable-area">
+                    <p>Gracias por su confianza. | Presupuesto válido por 15 días.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const itemForm = document.getElementById('item-form');
+        const tablaItems = document.getElementById('tabla-items');
+        const presupuestoSubtotalEl = document.getElementById('presupuesto-subtotal');
+        const presupuestoTotalEl = document.getElementById('presupuesto-total');
+        const presupuestoFechaEl = document.getElementById('presupuesto-fecha');
+        const btnImprimir = document.getElementById('btn-imprimir');
+        const clienteNombreEl = document.getElementById('cliente-nombre');
+
+        // === AUTO-CORRECCIÓN SUAVE (Mayúscula Inicial) ===
+        const descripcionInput = document.getElementById('item-descripcion');
+        descripcionInput.addEventListener('blur', function() {
+            const val = this.value;
+            if (val.length > 0) {
+                // Pone la primera letra en mayúscula y deja el resto igual
+                this.value = val.charAt(0).toUpperCase() + val.slice(1);
+            }
+        });
+        // =================================================
+
+        let items = []; 
+        let presupuestoNumero = 1; 
+
+        const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
+
+        const renderItems = () => {
+            tablaItems.innerHTML = ''; 
+            let subtotal = 0;
+
+            if (items.length === 0) {
+                 tablaItems.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-3">Agregue items usando el formulario.</td></tr>'; 
+            } else {
+                items.forEach((item, index) => {
+                    const totalItem = item.cantidad * item.precio;
+                    subtotal += totalItem;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.cantidad}</td>
+                        <td>${item.descripcion}</td>
+                        <td class="text-end">${formatCurrency(item.precio)}</td>
+                        <td class="text-end">${formatCurrency(totalItem)}</td>
+                        <td class="text-center no-print">
+                            <button class="btn btn-sm btn-outline-danger btn-delete-item" data-index="${index}" title="Quitar Item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tablaItems.appendChild(tr);
+                });
+            }
+
+            presupuestoSubtotalEl.textContent = formatCurrency(subtotal);
+            presupuestoTotalEl.textContent = formatCurrency(subtotal); 
+        };
+
+        itemForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const cantidadInput = document.getElementById('item-cantidad');
+            const precioInput = document.getElementById('item-precio');
+
+            const cantidad = parseFloat(cantidadInput.value) || 0;
+            let descripcion = descripcionInput.value.trim();
+            // Aplicar mayúscula inicial al guardar también por si acaso
+            if (descripcion.length > 0) descripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1);
+            
+            const precio = parseFloat(precioInput.value) || 0;
+
+            if (cantidad <= 0 || !descripcion || precio <= 0) {
+                alert("Ingrese cantidad, descripción y precio unitario válidos.");
+                return;
+            }
+
+            items.push({ cantidad, descripcion, precio });
+            renderItems();
+
+            cantidadInput.value = 1;
+            descripcionInput.value = '';
+            precioInput.value = '';
+            descripcionInput.focus(); 
+        });
+
+         tablaItems.addEventListener('click', (e) => {
+             const target = e.target.closest('button.btn-delete-item');
+             if (!target) return; 
+
+             const index = parseInt(target.dataset.index);
+             if (isNaN(index) || index < 0 || index >= items.length) return; 
+
+             items.splice(index, 1); 
+             renderItems(); 
+         });
+
+        btnImprimir.addEventListener('click', () => {
+            window.print(); 
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            presupuestoFechaEl.textContent = new Date().toLocaleDateString('es-AR');
+
+            let ultimoNum = parseInt(localStorage.getItem('ultimoPresupuestoNum') || '0');
+            presupuestoNumero = ultimoNum + 1;
+            localStorage.setItem('ultimoPresupuestoNum', presupuestoNumero); 
+
+            document.getElementById('presupuesto-numero').textContent = presupuestoNumero.toString().padStart(4, '0');
+            renderItems(); 
+
+             const initialClientText = "Cliente: ";
+             clienteNombreEl.textContent = initialClientText; 
+             clienteNombreEl.setAttribute('placeholder', 'Click para ingresar nombre del cliente');
+
+             clienteNombreEl.addEventListener('focus', () => {
+                 if (clienteNombreEl.textContent === initialClientText) {
+                    clienteNombreEl.textContent = ''; 
+                 }
+             });
+             clienteNombreEl.addEventListener('blur', () => {
+                  if (clienteNombreEl.textContent.trim() === '') {
+                      clienteNombreEl.textContent = initialClientText; 
+                  } else if (!clienteNombreEl.textContent.startsWith(initialClientText)) {
+                       clienteNombreEl.textContent = initialClientText + clienteNombreEl.textContent;
+                  }
+             });
+        });
+    </script>
+</body>
+</html>
